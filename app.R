@@ -1,0 +1,600 @@
+#setwd("~/Google Drive/Shared drives/Ehsan PhD work/Codes")
+setwd("G:\\Shared drives\\Ehsan PhD work\\Codes")
+source("ICcell_appfunc.R", local=TRUE)
+source("CRTVarAdj_func.R", local=TRUE)
+
+# Define UI for application that draws a histogram
+ui <- fluidPage(
+  # Application title
+  titlePanel(h1("Information content of cluster-period cells of SW designs",h2("New Version (Main Appraoch, Pause Button)"),h3("Source: Jessica Kasza and Kelsey Grantham GitHub"))),
+  # Sidebar with a slider input for number of bins
+  
+  sidebarLayout(
+    sidebarPanel(
+      sliderInput(inputId = "T", label = "Number of periods:",
+                  min = 5, max = 20, value = 5,  step = 1),
+      numericInput("m",
+                   "Number of subjects in each cluster-period, m:",
+                   min = 1,
+                   max=1000,
+                   step = 1,
+                   value = 100),
+      numericInput("rho0", "Intra-cluster correlation",
+                   min = 0,
+                   max=0.2,
+                   step = 0.001,
+                   value = 0.05),
+      radioButtons("type", label = ("Allow for decay correlation"), 
+                   choices = list("Yes" = 1, "No" = 0), selected = 1),
+      numericInput("r",
+                   "Cluster auto-correlation",
+                   min = 0,
+                   max=1,
+                   step = 0.05,
+                   value = 0.95),
+      # radioButtons("cnum", label = "Remove one pair at each step", 
+      #              choices = list("Yes" = 1, "No" = 0), selected = 0),
+      sliderInput("effsize", "Effect size:",
+                  min = 0.05, max = 1.0,
+                  value = 0.2, step = 0.05),
+      # sliderInput("acrate", "Control rate of animation length:",#control rate of animation length (in seconds)
+      #             min = 0.5, max = 2.0,
+      #             value = 1, step = 0.1),
+      # Update button to defer the rendering of output until user
+      # clicks the button
+      actionButton("update", "Update"),
+    ),
+    mainPanel(
+      tabsetPanel(
+        tabPanel("Information content of cells",
+                 plotOutput("varplot"),
+                 textOutput("ICcelltext")
+        ),
+        tabPanel("Information content of sequences",
+                 plotOutput("varSEQplot"),
+                 textOutput("ICseqtext")
+        ),
+        tabPanel("Information content of periods",  
+                 plotOutput("varPERplot"),
+                 textOutput("ICpertext")
+        ),
+        tabPanel("Information content of cells (New)",  
+                 plotOutput("varMainplot"),
+                 textOutput("")
+        ),
+        tabPanel("The sequential removal of low-information contents of cells",  
+                 uiOutput("plotheader1a"), uiOutput("plotheader1b"),
+                 plotlyOutput("varREMplot"),
+                 textOutput("ICremtext")
+        ),
+        tabPanel("Variance",
+                 uiOutput("plotheader2a"), uiOutput("plotheader2b"),
+                 plotlyOutput("Varsplot"),
+                 textOutput("ICvartext")
+        ),
+        tabPanel("Relative Variance",
+                 uiOutput("plotheader3a"), uiOutput("plotheader3b"),
+                 plotlyOutput("RVarsplot"),
+                 textOutput("ICRvartext")
+        ),
+        tabPanel("Power",  
+                 uiOutput("plotheader4a"), uiOutput("plotheader4b"),
+                 plotlyOutput("Powplot"),
+                 textOutput("ICpowtext")
+        )     
+      )
+    )
+  )
+)
+# Define server logic required to draw a histogram
+server <- function(input, output, session) {
+  
+  output$ICcelltext <- renderText({
+    "The information content of sequence-period cells is displayed, where the information content of a cell
+    is the variance of the treatment effect estimator if that cell is excluded divided by the variance if that 
+    cell is included. There may be some cells which are entirely black:
+    this implies that the model as specified cannot be fitted if this cell is excluded."
+  })
+  output$ICseqtext <- renderText({
+    "The information content of treatment sequences is displayed, where the information content of a sequence
+    is the variance of the treatment effect estimator if that sequence is excluded divided by the variance if that 
+    sequence is included. There may be some sequences which are entirely black:
+    this implies that the model as specified cannot be fitted if this sequence is excluded."
+  })
+  output$ICpertext <- renderText({
+    "The information content of periods is displayed, where the information content of a period
+    is the variance of the treatment effect estimator if that period is excluded divided by the variance if that 
+    period is included. Gray period are those missing by design. There may be some periods which are entirely black:
+    this implies that the model as specified cannot be fitted if this period is excluded."
+  })
+  output$ICremtext <- renderText({
+    "..."
+  })
+  output$ICvartext <- renderText({
+    "..."
+  })
+  output$ICRvartext <- renderText({
+    "..."
+  })
+  output$ICpowtext <- renderText({
+    "..."
+  })
+  #plot shows up on start-up and doesn't need the actionButton initially    
+  values <- reactiveValues(
+    T = 5,
+    m = 100,
+    rho0 = 0.05,
+    r=0.95,
+    type=1,
+    #cnum=0,
+    effsize=0.2,
+    #acrate=1
+  )
+  #The main thing to use actionButton
+  observeEvent(input$update, {
+    values$T <- input$T
+    values$m <- input$m
+    values$rho0 <- input$rho0
+    values$r <- input$r
+    values$type <- input$type
+    #values$cnum <- input$cnum
+    values$effsize <- input$effsize
+   # values$acrate <- input$acrate
+  })
+  output$plotheader1a <- eventReactive(input$update, {
+    header1a()
+  })
+  
+  output$plotheader1b <- eventReactive(input$update, {
+    header1b()
+  })
+  
+  header1a <- renderPrint({
+    tags$h3("The sequential removal of cells with low-information content")
+  })
+  header1b <- renderPrint({
+    tags$h4("Updating the information content of remaining cells, and iterating")
+  })
+  
+  output$plotheader2a <- eventReactive(input$update, {
+    header2a()
+  })
+  
+  output$plotheader2b <- eventReactive(input$update, {
+    header2b()
+  })
+  
+  header2a <- renderPrint({
+    tags$h3("Variance of treatment effect estimator")
+  })
+  header2b <- renderPrint({
+    tags$h4("Number of iterations")
+  })
+  output$plotheader3a <- eventReactive(input$update, {
+    header3a()
+  })
+  
+  output$plotheader3b <- eventReactive(input$update, {
+    header3b()
+  })
+  
+  header3a <- renderPrint({
+    tags$h3("Relative variance of treatment effect estimator")
+  })
+  header3b <- renderPrint({
+    tags$h4("Incomplete design variance vs complete design variance")
+  })
+  output$plotheader4a <- eventReactive(input$update, {
+    header4a()
+  })
+  
+  output$plotheader4b <- eventReactive(input$update, {
+    header4b()
+  })
+  
+  header4a <- renderPrint({
+    tags$h3(paste0("Power to detect effect size of ", input$effsize))
+  })
+  header4b <- renderPrint({
+    tags$h4("Number of iterations")
+  })
+  
+  
+  output$varplot<-renderPlot({
+
+    #res <- getresults()
+
+    Xdes <- SWdesmat(values$T)
+
+    #varmatall <- round(res,10)
+    varmatall<- CRTVarGeneral(Xdes,values$m,values$rho0,values$r,values$type)
+
+    varmat_excl<-matrix(data=NA, nrow=nrow(Xdes), ncol=ncol(Xdes))
+
+    for(i in 1:nrow(Xdes)){
+      for (j in 1:ncol(Xdes)){
+        if(is.na(Xdes[i,j])==TRUE)  varmat_excl[i,j] <- NA
+        else if(is.na(Xdes[i,j])==FALSE) {
+          Xdesij <- Xdes
+          Xdesij[i,j] <- NA
+          varmat_excl[i,j] <- CRTVarGeneral(Xdesij,values$m,values$rho0,values$r,values$type)/varmatall
+        }
+      }
+    }
+
+    varmat_excl<-round(varmat_excl, 4)
+    melted_varmatexcl <- melt(varmat_excl)
+    names(melted_varmatexcl)[names(melted_varmatexcl)=="Var1"] <- "Sequence"
+    names(melted_varmatexcl)[names(melted_varmatexcl)=="Var2"] <- "Period"
+
+    color_palette <-colorRampPalette(c( "yellow", "red"))(length(table(varmat_excl)))
+    # if(sum(melted_varmatexcl$value==2.2772, na.rm=TRUE) > 0)
+    #   color_palette[length(table(melted_varmatexcl$value))]<- "#000000"
+
+    T <- ncol(Xdes)
+    K <- nrow(Xdes)
+
+    ggplot(data = melted_varmatexcl, aes(x=Period, y=Sequence, fill = factor(value))) +
+      ggtitle("") +
+      geom_tile(colour = "grey50") +
+      scale_y_reverse(breaks=c(1:K)) +
+      scale_x_continuous(breaks=c(1:T)) +
+      theme(panel.grid.minor = element_blank()) +
+      geom_text(aes(Period, Sequence, label = round(value,4)), color = "black", size = 5) +
+      scale_fill_manual(values = color_palette, breaks=levels(melted_varmatexcl$value)[seq(90, 150, by=5)])
+
+
+  })
+
+  output$varSEQplot<-renderPlot({
+    
+    Xdes <- SWdesmat(values$T)
+    
+    
+    #If there are any periods with only 2 treatment sequences, with
+    #differential exposure, cannot calculate the information content
+    #of either of these two sequences.
+    #Need to flag that the cells in these periods MUST be included and
+    #thus do not have an information content.
+    
+    varmatall <- CRTVarGeneral(Xdes,values$m,values$rho0,values$r,values$type)
+    varmat_excl<-matrix(data=NA, nrow=nrow(Xdes), ncol=ncol(Xdes))
+    
+    for (i in 1:nrow(Xdes)){
+      Xdesij <- Xdes
+      Xdesij[i,] <- NA
+      varmat_excl[i,] <- CRTVarGeneral(Xdesij,values$m,values$rho0,values$r,values$type)/varmatall
+    }
+    
+    
+    varmat_excl<-round(varmat_excl, 4)
+    melted_varmatexcl <- melt(varmat_excl)
+    names(melted_varmatexcl)[names(melted_varmatexcl)=="Var1"] <- "Sequence"
+    names(melted_varmatexcl)[names(melted_varmatexcl)=="Var2"] <- "Period"
+    
+    color_palette <-colorRampPalette(c( "yellow", "red"))(length(table(varmat_excl)))
+    # if(sum(melted_varmatexcl$value==2.2772, na.rm=TRUE) > 0)    
+    #   color_palette[length(table(melted_varmatexcl$value))]<- "#000000"
+    
+    T <- ncol(Xdes)
+    K <- nrow(Xdes)
+    
+    ggplot(data = melted_varmatexcl, aes(x=Period, y=Sequence, fill = factor(value))) +
+      ggtitle("") +
+      geom_tile(colour = "grey50") +
+      scale_y_reverse(breaks=c(1:K)) +
+      scale_x_continuous(breaks=c(1:T)) +
+      theme(panel.grid.minor = element_blank()) +
+      geom_text(aes(Period, Sequence, label = round(value,4)), color = "black", size = 5) +
+      scale_fill_manual(values = color_palette, breaks=levels(melted_varmatexcl$value)[seq(90, 150, by=5)])
+    
+    
+  })  
+  
+  
+  output$varPERplot<-renderPlot({
+    
+    Xdes <- SWdesmat(values$T)
+    
+    varmatall <- CRTVarGeneral(Xdes,values$m,values$rho0,values$r,values$type)
+    varmat_excl<-matrix(data=NA, nrow=nrow(Xdes), ncol=ncol(Xdes))
+    
+    for (j in 1:ncol(Xdes)){
+      varmat_excl[,j] <- CRTVarGeneralT(Xdes,j,values$m,values$rho0,values$r,values$type)/varmatall
+    }
+    
+    varmat_excl<-round(varmat_excl, 4)
+    melted_varmatexcl <- melt(varmat_excl)
+    names(melted_varmatexcl)[names(melted_varmatexcl)=="Var1"] <- "Sequence"
+    names(melted_varmatexcl)[names(melted_varmatexcl)=="Var2"] <- "Period"
+    
+    color_palette <-colorRampPalette(c( "yellow", "red"))(length(table(varmat_excl)))
+    # if(sum(melted_varmatexcl$value==2.2772, na.rm=TRUE) > 0)    
+    #   color_palette[length(table(melted_varmatexcl$value))]<- "#000000"
+    
+    T <- ncol(Xdes)
+    K <- nrow(Xdes)
+    
+    ggplot(data = melted_varmatexcl, aes(x=Period, y=Sequence, fill = factor(value))) +
+      ggtitle("") +
+      geom_tile(colour = "grey50") +
+      scale_y_reverse(breaks=c(1:K)) +
+      scale_x_continuous(breaks=c(1:T)) +
+      theme(panel.grid.minor = element_blank()) +
+      geom_text(aes(Period, Sequence, label = round(value,4)), color = "black", size = 5) +
+      scale_fill_manual(values = color_palette, breaks=levels(melted_varmatexcl$value)[seq(90, 150, by=5)])
+    
+    
+  })
+  output$varMainplot<-renderPlot({
+    
+    Xdes <- SWdesmat(values$T)
+    K=values$T-1
+
+    varmatall <- c()
+    varmatall<- CRTVarGeneralAdj(Xdes,values$m,values$rho0,values$r,values$type)
+    varmat_excl<-matrix(data=NA, nrow=nrow(Xdes), ncol=ncol(Xdes))
+    
+      for(i in 1:nrow(Xdes)){
+        for (j in 1:ncol(Xdes)){
+          if(is.na(Xdes[i,j])==TRUE | is.na(Xdes[K-i+1,values$T-j+1])==TRUE){
+            varmat_excl[i,j] <- NA
+            varmat_excl[K-i+1,values$T-j+1] <- NA
+          }
+          else if(is.na(Xdes[i,j])==FALSE & is.na(Xdes[K-i+1,values$T-j+1])==FALSE) {
+            Xdesij <- Xdes
+            Xdesij[i,j] <- NA
+            Xdesij[K-i+1,values$T-j+1] <- NA
+            varmat_excl[i,j] <- CRTVarGeneralAdj(Xdesij,values$m,values$rho0,values$r,values$type)/varmatall
+            varmat_excl[K-i+1,values$T-j+1] <- varmat_excl[i,j]
+          }
+        }
+      }
+    
+    varmat_excl<-round(varmat_excl, 4)
+    melted_varmatexcl <- melt(varmat_excl)
+    names(melted_varmatexcl)[names(melted_varmatexcl)=="Var1"] <- "Sequence"
+    names(melted_varmatexcl)[names(melted_varmatexcl)=="Var2"] <- "Period"
+    
+    color_palette <-colorRampPalette(c( "yellow", "red"))(length(table(varmat_excl)))
+    # if(sum(melted_varmatexcl$value==2.2772, na.rm=TRUE) > 0)    
+    #   color_palette[length(table(melted_varmatexcl$value))]<- "#000000"
+    
+    T <- ncol(Xdes)
+    K <- nrow(Xdes)
+    
+    ggplot(data = melted_varmatexcl, aes(x=Period, y=Sequence, fill = factor(value))) +
+      ggtitle("") +
+      geom_tile(colour = "grey50") +
+      scale_y_reverse(breaks=c(1:K)) +
+      scale_x_continuous(breaks=c(1:T)) +
+      theme(panel.grid.minor = element_blank()) +
+      geom_text(aes(Period, Sequence, label = round(value,4)), color = "black", size = 5) +
+      scale_fill_manual(values = color_palette, breaks=levels(melted_varmatexcl$value)[seq(90, 150, by=5)])
+    
+    
+  })
+  output$varREMplot<-renderPlotly({
+    
+    K=values$T-1
+    Xdes <- SWdesmat(values$T)
+    
+    varmatall <- c()
+    varmatall<- CRTVarGeneralAdj(Xdes,values$m,values$rho0,values$r,values$type)
+    varmat_excl<-matrix(data=NA, nrow=nrow(Xdes), ncol=ncol(Xdes))
+    
+    
+    rep_func2 = function(Xdes,varmatall){
+      for(i in 1:nrow(Xdes)){
+        for (j in 1:ncol(Xdes)){
+          if(is.na(Xdes[i,j])==TRUE | is.na(Xdes[K-i+1,values$T-j+1])==TRUE){
+            varmat_excl[i,j] <- NA
+            varmat_excl[K-i+1,values$T-j+1] <- NA
+          }
+          else if(is.na(Xdes[i,j])==FALSE & is.na(Xdes[K-i+1,values$T-j+1])==FALSE) {
+            Xdesij <- Xdes
+            Xdesij[i,j] <- NA
+            Xdesij[K-i+1,values$T-j+1] <- NA
+            varmat_excl[i,j] <- CRTVarGeneralAdj(Xdesij,values$m,values$rho0,values$r,values$type)/varmatall
+            varmat_excl[K-i+1,values$T-j+1] <- varmat_excl[i,j]
+          }
+        }
+      }
+      return(varmat_excl)
+    }
+    
+    mval <- list()
+    Xdlist <- list() 
+    dlist <- list() 
+    Xdlist[[1]] <- Xdes
+    dlist [[1]]<- rep_func2(Xdlist[[1]],varmatall)
+    varmatall[1] <- varmatall 
+    
+    #remove all low-infomration content cells and updating.
+    for (i in 2:(values$T*K/2)){
+      mval[[i-1]] <- which(rep_func2(Xdlist[[i-1]],varmatall[i-1])==min(rep_func2(Xdlist[[i-1]],varmatall[i-1]),na.rm = TRUE), arr.ind = TRUE)
+      Xdlist[[i]]=Xdlist[[i-1]]
+      #if (values$cnum==0){
+        for (j in 1:dim(mval[[i-1]])[1]){
+          Xdlist[[i]][mval[[i-1]][[j]],mval[[i-1]][[dim(mval[[i-1]])[1]+j]]]<- NA
+          Xdlist[[i]][K+1-mval[[i-1]][[j]],values$T+1-mval[[i-1]][[dim(mval[[i-1]])[1]+j]]]<- NA
+        }
+        #pattern for odd and even periods are like below
+        if (sum(colSums(!is.na(Xdlist[[i]])))==4 | sum(colSums(!is.na(Xdlist[[i]])))==2) {
+          if (sum(colSums(!is.na(dlist[[i-1]])))==2) {
+            dlist[[i-1]]<- NULL
+            varmatall <- varmatall[-(i-1)] 
+          }
+          break
+        }
+      #}
+      # else if (values$cnum==1){
+      #   if (dim(mval[[i-1]])[1]==1) {
+      #     Xdlist[[i]][mval[[i-1]][[1]],mval[[i-1]][[dim(mval[[i-1]])[1]+1]]]<- NA
+      #     Xdlist[[i]][K+1-mval[[i-1]][[1]],values$T+1-mval[[i-1]][[dim(mval[[i-1]])[1]+1]]]<- NA
+      #   }else if (dim(mval[[i-1]])[1]==2 & (mval[[i-1]][[2]]==K+1-mval[[i-1]][[1]]) & (mval[[i-1]][[dim(mval[[i-1]])[1]+2]]==values$T+1-mval[[i-1]][[dim(mval[[i-1]])[1]+1]])){
+      #     Xdlist[[i]][mval[[i-1]][[1]],mval[[i-1]][[dim(mval[[i-1]])[1]+1]]]<- NA
+      #     Xdlist[[i]][K+1-mval[[i-1]][[1]],values$T+1-mval[[i-1]][[dim(mval[[i-1]])[1]+1]]]<- NA
+      #   }
+      #   else if (dim(mval[[i-1]])[1]>=2 & (mval[[i-1]][[2]]!=K+1-mval[[i-1]][[1]] | mval[[i-1]][[dim(mval[[i-1]])[1]+2]]!=values$T+1-mval[[i-1]][[dim(mval[[i-1]])[1]+1]])) {
+      #     mval[[i-1]] <- mval[[i-1]][order(mval[[i-1]][,1],mval[[i-1]][,2]),]
+      #     Xdlist[[i]][mval[[i-1]][[1]],mval[[i-1]][[dim(mval[[i-1]])[1]+1]]]<- NA
+      #     Xdlist[[i]][K+1-mval[[i-1]][[1]],values$T+1-mval[[i-1]][[dim(mval[[i-1]])[1]+1]]]<- NA
+      #   }
+      #   #pattern for odd and even periods are like below
+      #   if ((values$T %% 2 != 0 & sum(colSums(!is.na(Xdlist[[i]])))==4) | (values$T %% 2 == 0 & sum(colSums(!is.na(Xdlist[[i]])))==2)) {
+      #     break
+      #   }
+      # }
+      varmatall[i] <- CRTVarGeneralAdj(Xdlist[[i]],values$m,values$rho0,values$r,values$type)
+      dlist[[i]] = rep_func2(Xdlist[[i]],varmatall[i])
+    }
+    
+    melted_varmatexcl_t <- data.frame( Var1=integer(),
+                                       Var2=integer(),
+                                       value=integer(),
+                                       iter=integer())
+    for (i in 1:length(dlist)){
+      varmat_excl<-round(dlist[[i]], 4)
+      melted_varmatexcl <- melt(varmat_excl)
+      melted_varmatexcl$iter<- i
+      melted_varmatexcl_t <- rbind(melted_varmatexcl, melted_varmatexcl_t)
+    }
+    #color_palette <-colorRampPalette(c( "yellow", "red"))(length(table(varmat_excl)))
+    pal <- colorRampPalette(brewer.pal(8, "YlOrRd"))(length(unique(melted_varmatexcl_t$value))-1)
+    
+    names(melted_varmatexcl_t)[names(melted_varmatexcl_t)=="Var1"] <- "Sequence"
+    names(melted_varmatexcl_t)[names(melted_varmatexcl_t)=="Var2"] <- "Period"
+    
+    # if(sum(melted_varmatexcl_t$value)==0){
+    #   return() # dont error if no data
+    # }
+    
+    T <- ncol(Xdes)
+    K <- nrow(Xdes)
+    
+    #outfile <- tempfile(fileext='.gif')
+###Need power values for removal plot####    
+iter=1:length(varmatall)
+df=as.data.frame(varmatall)
+
+pow <- function(vars, effsize, siglevel=0.05){
+  z <- qnorm(siglevel/2)
+  pow <- pnorm(z + sqrt(1/vars)*effsize)
+  return(pow)
+}
+
+# Calculate power for a set of variances, a given effect size and sig level
+powdf <- function(df, effsize, siglevel=0.05){
+  powvals <- apply(df, MARGIN=2, pow, effsize, siglevel)
+  powdf <- data.frame(iter, df$varmatall,powvals)
+  colnames(powdf) <- c("iter","variance","power")
+  return(powdf)
+}
+res <- powdf(df,values$effsize)
+
+res <- cbind(res,res$variance/res$variance[1])
+colnames(res) <- c("iter","variance","power","Rvariance") 
+
+melted_varmatexcl_t <- merge(res, melted_varmatexcl_t, by = "iter", all = TRUE)
+    
+    p<-ggplot(melted_varmatexcl_t,aes(x=Period, y=Sequence,fill=factor(value),frame=iter))+
+      geom_tile(colour = "grey50") +
+      scale_y_reverse(breaks=c(1:K)) +
+      scale_x_continuous(breaks=c(1:T)) +
+      theme(panel.grid.minor = element_blank()) +
+      geom_text(x=0.9,y=-0.4,hjust=0,aes(label=paste0("Power:",format(round(power,4)*100,2),"%")),
+                size=4,fontface="")+ 
+      theme(legend.position="none")+
+      # geom_text(data = melted_varmatexcl_t,aes(Period, Sequence,label= value),
+      # color = "black",size = 4,check_overlap = TRUE, alpha=1) +
+      geom_label(data = melted_varmatexcl_t,aes(label= round(value,4),fontface = "bold"),
+               colour = "white",size = 4) +
+      scale_fill_manual(values = pal, breaks=levels(melted_varmatexcl_t$value)[seq(90, 150, by=5)],
+                        na.value="gray")
+      
+    p1<-ggplotly(p) %>% 
+      animation_opts(frame = 500,transition = 0,redraw = TRUE) %>%  
+      animation_slider(currentvalue = list(prefix = "Iter: ", font = list(color="orange"))) %>%
+      partial_bundle(local = FALSE)
+    #toWebGL()
+  
+    # New
+    #anim_save("outfile.gif", p1) # New
+    
+     
+    
+    output$Varsplot<-renderPlotly({
+      
+      #cstus=if(values$cnum==1){cstus="YES"}else{cstus="NO"}
+    p <- plot_ly(res, height=500, width=800, x=~iter, y=~variance, name="Variance", type="scatter",
+           mode="lines", hoverinfo="text", hoverlabel=list(bordercolor=NULL, font=list(size=16)),
+           text=~paste("Iteration:", iter, "<br>Variance:", round(variance, 3)),
+           line=list(color="#F8766D", width=4, dash="dash"))%>%
+           layout(xaxis=list(title="Iteration", titlefont=list(size=18), showline=TRUE,
+           tickmode="auto", tickfont=list(size=16), nticks=6, ticks="inside",
+           mirror=TRUE, showgrid=FALSE),
+           yaxis=list(title="Variance", titlefont=list(size=18), tickfont=list(size=16),
+           mirror=TRUE, showline=TRUE),
+           # title=list(text=paste("m=",input$m,",","T=",input$T,",","rho0=",input$rho0,",","r=",
+           # input$r,",","effsize=",
+           #input$effsize,"\n","Removing one pair at each step=",cstus), y =1),
+           legend=list(orientation="h", xanchor="center", yanchor="bottom", x=0.5, y=-0.5, font=list(size=16)),
+           margin=list(l=100, r=40))
+           print(p)
+    })
+    
+    output$RVarsplot<-renderPlotly({
+      
+      #cstus=if(values$cnum==1){cstus="YES"}else{cstus="NO"}
+      p <- plot_ly(res, height=500, width=800, x=~iter, y=~Rvariance, name="RVariance", type="scatter",
+           mode="lines", hoverinfo="text", hoverlabel=list(bordercolor=NULL, font=list(size=16)),
+           text=~paste("Iteration:", iter, "<br>RVariance:", round(Rvariance, 3)),
+           line=list(color="#F8766D", width=4, dash="dash"))%>%
+           layout(xaxis=list(title="Iteration", titlefont=list(size=18), showline=TRUE,
+           tickmode="auto", tickfont=list(size=16), nticks=6, ticks="inside",
+           mirror=TRUE, showgrid=FALSE),
+           yaxis=list(title="Relative Variance", titlefont=list(size=18), tickfont=list(size=16),
+           mirror=TRUE, showline=TRUE),
+           # title=list(text=paste("m=",input$m,",","T=",input$T,",","rho0=",input$rho0,",","r=",
+           #input$r,",","effsize=",
+           #                       input$effsize,"\n","Removing one pair at each step=",cstus), y =1),
+           legend=list(orientation="h", xanchor="center", yanchor="bottom", x=0.5, y=-0.5, font=list(size=16)),
+           margin=list(l=100, r=40))
+      print(p)
+    })
+    
+    output$Powplot<-renderPlotly({
+      #cstus=if(values$cnum==1){cstus="YES"}else{cstus="NO"}
+      p <- plot_ly(res, height=500, width=800, x=~iter, y=~power, name="Power", type="scatter",
+           mode="lines", hoverinfo="text", hoverlabel=list(bordercolor=NULL, font=list(size=16)),
+           text=~paste("Iteration:", iter, "<br>Power:", round(power, 3)),
+           line=list(color="#00BA38", width=4, dash="dash"))%>%
+           layout(xaxis=list(title="Iteration", titlefont=list(size=18), showline=TRUE,
+           tickmode="auto", tickfont=list(size=16), nticks=6, ticks="inside",
+           mirror=TRUE, showgrid=FALSE),
+           yaxis=list(title="Power", titlefont=list(size=18), tickfont=list(size=16),
+           mirror=TRUE, showline=TRUE),
+           # title=list(text=paste("m=",input$m,",","T=",input$T,",","rho0=",input$rho0,",","r=",
+           # input$r,",","effsize=",
+           #                       input$effsize,"\n","Removing one pair at each step=",cstus), y = 0.15),
+           legend=list(orientation="h", xanchor="center", yanchor="bottom", x=0.5, y=-0.5, font=list(size=16)),
+           margin=list(l=100, r=60))
+      print(p)
+    })
+    
+    ####close animated image### 
+    # Return a list containing the filename
+    # list(src = "outfile.gif",
+    #      contentType = 'image/gif'
+    #      # width = 400,
+    #      # height = 300,
+    #      # alt = "This is alternate text"
+    # )}, deleteFile = TRUE)
+   print(p1)
+  })
+}
+
+# Run the application
+shinyApp(ui = ui, server = server)
+
