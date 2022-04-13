@@ -46,23 +46,11 @@ ui <- fluidPage(
     ),
     mainPanel(
       tabsetPanel(
-        tabPanel("Information content of cells",
-                 plotOutput("varplot"),
-                 textOutput("ICcelltext")
-        ),
-        tabPanel("Information content of sequences",
-                 plotOutput("varSEQplot"),
-                 textOutput("ICseqtext")
-        ),
-        tabPanel("Information content of periods",  
-                 plotOutput("varPERplot"),
-                 textOutput("ICpertext")
-        ),
-        tabPanel("Information content of cells (New)",  
+        tabPanel("Information content of pairs of cluster-period cells",  
                  plotOutput("varMainplot"),
-                 textOutput("")
+                 textOutput("ICpcelltext")
         ),
-        tabPanel("The sequential removal of low-information contents of cells",  
+        tabPanel("The iterative removal of cluster-period cells",  
                  uiOutput("plotheader1a"), uiOutput("plotheader1b"),
                  plotlyOutput("varREMplot"),
                  textOutput("ICremtext")
@@ -89,23 +77,11 @@ ui <- fluidPage(
 # Define server logic required to draw a histogram
 server <- function(input, output, session) {
   
-  output$ICcelltext <- renderText({
-    "The information content of sequence-period cells is displayed, where the information content of a cell
-    is the variance of the treatment effect estimator if that cell is excluded divided by the variance if that 
-    cell is included. There may be some cells which are entirely black:
-    this implies that the model as specified cannot be fitted if this cell is excluded."
-  })
-  output$ICseqtext <- renderText({
-    "The information content of treatment sequences is displayed, where the information content of a sequence
-    is the variance of the treatment effect estimator if that sequence is excluded divided by the variance if that 
-    sequence is included. There may be some sequences which are entirely black:
-    this implies that the model as specified cannot be fitted if this sequence is excluded."
-  })
-  output$ICpertext <- renderText({
-    "The information content of periods is displayed, where the information content of a period
-    is the variance of the treatment effect estimator if that period is excluded divided by the variance if that 
-    period is included. Gray period are those missing by design. There may be some periods which are entirely black:
-    this implies that the model as specified cannot be fitted if this period is excluded."
+  output$ICpcelltext <- renderText({
+    "The information content of pairs of cluster-period cells is displayed, where the information content of a pair of cells
+    is the variance of the treatment effect estimator if that cells are excluded divided by the variance if that 
+    cells are included. There may be some cells which are entirely black:
+    this implies that the model as specified cannot be fitted if these cells are excluded."
   })
   output$ICremtext <- renderText({
     "..."
@@ -199,133 +175,6 @@ server <- function(input, output, session) {
     tags$h4("Number of iterations")
   })
   
-  
-  output$varplot<-renderPlot({
-
-    #res <- getresults()
-
-    Xdes <- SWdesmat(values$T)
-
-    #varmatall <- round(res,10)
-    varmatall<- CRTVarGeneral(Xdes,values$m,values$rho0,values$r,values$type)
-
-    varmat_excl<-matrix(data=NA, nrow=nrow(Xdes), ncol=ncol(Xdes))
-
-    for(i in 1:nrow(Xdes)){
-      for (j in 1:ncol(Xdes)){
-        if(is.na(Xdes[i,j])==TRUE)  varmat_excl[i,j] <- NA
-        else if(is.na(Xdes[i,j])==FALSE) {
-          Xdesij <- Xdes
-          Xdesij[i,j] <- NA
-          varmat_excl[i,j] <- CRTVarGeneral(Xdesij,values$m,values$rho0,values$r,values$type)/varmatall
-        }
-      }
-    }
-
-    varmat_excl<-round(varmat_excl, 4)
-    melted_varmatexcl <- melt(varmat_excl)
-    names(melted_varmatexcl)[names(melted_varmatexcl)=="Var1"] <- "Sequence"
-    names(melted_varmatexcl)[names(melted_varmatexcl)=="Var2"] <- "Period"
-
-    color_palette <-colorRampPalette(c( "yellow", "red"))(length(table(varmat_excl)))
-    # if(sum(melted_varmatexcl$value==2.2772, na.rm=TRUE) > 0)
-    #   color_palette[length(table(melted_varmatexcl$value))]<- "#000000"
-
-    T <- ncol(Xdes)
-    K <- nrow(Xdes)
-
-    ggplot(data = melted_varmatexcl, aes(x=Period, y=Sequence, fill = factor(value))) +
-      ggtitle("") +
-      geom_tile(colour = "grey50") +
-      scale_y_reverse(breaks=c(1:K)) +
-      scale_x_continuous(breaks=c(1:T)) +
-      theme(panel.grid.minor = element_blank()) +
-      geom_text(aes(Period, Sequence, label = round(value,4)), color = "black", size = 5) +
-      scale_fill_manual(values = color_palette, breaks=levels(melted_varmatexcl$value)[seq(90, 150, by=5)])
-
-
-  })
-
-  output$varSEQplot<-renderPlot({
-    
-    Xdes <- SWdesmat(values$T)
-    
-    
-    #If there are any periods with only 2 treatment sequences, with
-    #differential exposure, cannot calculate the information content
-    #of either of these two sequences.
-    #Need to flag that the cells in these periods MUST be included and
-    #thus do not have an information content.
-    
-    varmatall <- CRTVarGeneral(Xdes,values$m,values$rho0,values$r,values$type)
-    varmat_excl<-matrix(data=NA, nrow=nrow(Xdes), ncol=ncol(Xdes))
-    
-    for (i in 1:nrow(Xdes)){
-      Xdesij <- Xdes
-      Xdesij[i,] <- NA
-      varmat_excl[i,] <- CRTVarGeneral(Xdesij,values$m,values$rho0,values$r,values$type)/varmatall
-    }
-    
-    
-    varmat_excl<-round(varmat_excl, 4)
-    melted_varmatexcl <- melt(varmat_excl)
-    names(melted_varmatexcl)[names(melted_varmatexcl)=="Var1"] <- "Sequence"
-    names(melted_varmatexcl)[names(melted_varmatexcl)=="Var2"] <- "Period"
-    
-    color_palette <-colorRampPalette(c( "yellow", "red"))(length(table(varmat_excl)))
-    # if(sum(melted_varmatexcl$value==2.2772, na.rm=TRUE) > 0)    
-    #   color_palette[length(table(melted_varmatexcl$value))]<- "#000000"
-    
-    T <- ncol(Xdes)
-    K <- nrow(Xdes)
-    
-    ggplot(data = melted_varmatexcl, aes(x=Period, y=Sequence, fill = factor(value))) +
-      ggtitle("") +
-      geom_tile(colour = "grey50") +
-      scale_y_reverse(breaks=c(1:K)) +
-      scale_x_continuous(breaks=c(1:T)) +
-      theme(panel.grid.minor = element_blank()) +
-      geom_text(aes(Period, Sequence, label = round(value,4)), color = "black", size = 5) +
-      scale_fill_manual(values = color_palette, breaks=levels(melted_varmatexcl$value)[seq(90, 150, by=5)])
-    
-    
-  })  
-  
-  
-  output$varPERplot<-renderPlot({
-    
-    Xdes <- SWdesmat(values$T)
-    
-    varmatall <- CRTVarGeneral(Xdes,values$m,values$rho0,values$r,values$type)
-    varmat_excl<-matrix(data=NA, nrow=nrow(Xdes), ncol=ncol(Xdes))
-    
-    for (j in 1:ncol(Xdes)){
-      varmat_excl[,j] <- CRTVarGeneralT(Xdes,j,values$m,values$rho0,values$r,values$type)/varmatall
-    }
-    
-    varmat_excl<-round(varmat_excl, 4)
-    melted_varmatexcl <- melt(varmat_excl)
-    names(melted_varmatexcl)[names(melted_varmatexcl)=="Var1"] <- "Sequence"
-    names(melted_varmatexcl)[names(melted_varmatexcl)=="Var2"] <- "Period"
-    
-    color_palette <-colorRampPalette(c( "yellow", "red"))(length(table(varmat_excl)))
-    # if(sum(melted_varmatexcl$value==2.2772, na.rm=TRUE) > 0)    
-    #   color_palette[length(table(melted_varmatexcl$value))]<- "#000000"
-    
-    T <- ncol(Xdes)
-    K <- nrow(Xdes)
-    
-    ggplot(data = melted_varmatexcl, aes(x=Period, y=Sequence, fill = factor(value))) +
-      ggtitle("") +
-      geom_tile(colour = "grey50") +
-      scale_y_reverse(breaks=c(1:K)) +
-      scale_x_continuous(breaks=c(1:T)) +
-      theme(panel.grid.minor = element_blank()) +
-      geom_text(aes(Period, Sequence, label = round(value,4)), color = "black", size = 5) +
-      scale_fill_manual(values = color_palette, breaks=levels(melted_varmatexcl$value)[seq(90, 150, by=5)])
-    
-    
-  })
   output$varMainplot<-renderPlot({
     
     Xdes <- SWdesmat(values$T)
