@@ -21,7 +21,7 @@ r=0.95
 #lbl="Exponential decay model"
 #1 decay 0 HH
 type=1
-T=12
+T=5
 # 0 removing without any consideration, 1 removing only one pair at each step
 #cnum=0
 effsize=0.2
@@ -167,5 +167,25 @@ melted_varmatexcl_t <- merge(res, melted_varmatexcl_t, by = "iter", all = TRUE)
       animation_slider(currentvalue = list(prefix = "Iter: ", font = list(color="orange")))
     
    # htmlwidgets::saveWidget(as_widget(p1), "index.html")
+    
+   
   
+#relative variance plots
+p <- plot_ly(res, height=500, width=800, x=~iter, y=~Rvariance, name="", type="scatter",
+                 mode="lines", hoverinfo="text", hoverlabel=list(bordercolor=NULL, font=list(size=16)),
+                 text=~paste("Iteration:", iter, "<br>RVariance:", round(Rvariance,3)),
+                 line=list(color="#F8766D", width=4, dash="dash"))%>%
+                 layout(xaxis=list(title="Iteration", titlefont=list(size=18), showline=TRUE,
+                 tickmode="auto", tickfont=list(size=16), nticks=6, ticks="inside",
+                 mirror=TRUE, showgrid=FALSE),    
+                 yaxis=list(title="Relative Variance", titlefont=list(size=18), tickfont=list(size=16),
+                 mirror=TRUE, showline=TRUE),
+                 # title=list(text=paste("m=",input$m,",","T=",input$T,",","rho0=",input$rho0,",","r=",
+                 #input$r,",","effsize=",
+                 #input$effsize,"\n","Removing one pair at each step=",cstus), y =1),
+                 legend=list(orientation="h", xanchor="center", yanchor="bottom", x=0.5, y=-0.5, font=list(size=16)),
+                 margin=list(l=100, r=40))
+print(p)
+p <- p %>% add_trace(y = ~Rvariance_2, name = 'trace 1', mode = 'lines') 
+
 
