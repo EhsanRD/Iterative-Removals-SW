@@ -1,5 +1,5 @@
 #setwd("~/Google Drive/Shared drives/Ehsan PhD work/Codes/")
-setwd("G:\\Shared drives\\Ehsan PhD work\\Codes")
+setwd("G:\\Shared drives\\Ehsan PhD work\\Codes\\Git\\Iterative-Removals-SW")
 source("CRTVarAdj_func.R", local=TRUE)
 
 # Functions for generating design matrices
