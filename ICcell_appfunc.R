@@ -16,7 +16,9 @@ library("gifski")
 library("cargo")
 library("tidyr")
 library("animation")
-
+library("htmlwidgets")
+library("plotly")
+library("manipulateWidget")
 
 # Functions for generating design matrices
 SWdesmat <- function(T) {
