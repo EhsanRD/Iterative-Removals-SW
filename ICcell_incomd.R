@@ -1,6 +1,7 @@
 #setwd("~/Google Drive/Shared drives/Ehsan PhD work/Codes/")
 setwd("G:\\Shared drives\\Ehsan PhD work\\Codes\\Git\\Iterative-Removals-SW")
 source("CRTVarAdj_func.R", local=TRUE)
+source("ICcell_appfunc.R", local=TRUE)
 
 # Functions for generating design matrices
 SWdesmat <- function(T) {
@@ -44,13 +45,11 @@ plot = function(data, m, T,rho0) {
   
 }
 
-
-
-#p1 = list()
+p = list()
 
 for (m in c(50,100)){
-    for (T in c(5,7)){
-      for (rho0 in c(0.01,0.05)){
+    for (T in c(5,7,8,10)){
+      for (rho0 in c(0.01,0.05,0.1)){
         
 res_m <- data.frame(iter=integer(),
               variance=integer(),
@@ -187,15 +186,16 @@ res_m <- rbind(res_m,res)
 
 #end of loop for cac
 }    
-
-pdf(paste0("G:\\Shared drives\\Ehsan PhD work\\Outputs\\RV\\RV_",m,"_",T,"_",rho0,".pdf"),width = 15, height = 9)
-plot(res_m,m,T,rho0)
-dev.off()
-#end of loop for combinations
+#save plots
+p = plot(res_m,m,T,rho0)
+#end of loop for desired settings
 }
   }
-    }
+}
+# combineWidgets(list = p, title = "")
+# htmlwidgets::saveWidget(p, "test.html")
 
+#paste0("G:/Shared drives/Ehsan PhD work/Outputs/RV/RV_",m,"_",T,"_",rho0,".pdf")
 #heatmap plot 
 
 # melted_varmatexcl_t <- merge(res, melted_varmatexcl_t, by = "iter", all = TRUE)
