@@ -16,7 +16,7 @@ SWdesmat <- function(T) {
 #(K+1-k,T+1-t)
 m=100
 rho0=0.05
-r=0.95
+#r=0.95
 #lbl="Hussey and Hughes model"
 #lbl="Exponential decay model"
 #1 decay 0 HH
@@ -25,6 +25,14 @@ T=5
 # 0 removing without any consideration, 1 removing only one pair at each step
 #cnum=0
 effsize=0.2
+
+
+res_m <- data.frame(iter=integer(),
+                  variance=integer(),
+                  power=integer(),
+                  r=integer(),
+                  RVariance=integer())
+for (r in c(0.95,0.8,0.5)){
 K=T-1
 Xdes <- SWdesmat(T)
 varmatall <- c()
@@ -143,49 +151,73 @@ powdf <- function(df, effsize, siglevel=0.05){
 }
 
 res <- powdf(df,effsize)
+res$r <- r
 
 res <- cbind(res,res$variance/res$variance[1])
-colnames(res) <- c("iter","variance","power","Rvariance")
+colnames(res) <- c("iter","variance","power","r","Rvariance")
 
-melted_varmatexcl_t <- merge(res, melted_varmatexcl_t, by = "iter", all = TRUE)
+res_m <- rbind(res_m,res)
 
-  p<-ggplot(melted_varmatexcl_t,aes(x=Period, y=Sequence,fill=factor(value),frame=iter))+
-    geom_tile(colour = "grey50") +
-    scale_y_reverse(breaks=c(1:K)) +
-    scale_x_continuous(breaks=c(1:T)) +
-    theme(panel.grid.minor = element_blank()) +
-    geom_text(x=0.9,y=-0.4,hjust=0,aes(label=paste0("Power:",format(round(power,4)*100,2),"%")),
-              size=4,fontface="")+ 
-    theme(legend.position="none")+
-    geom_label(data = melted_varmatexcl_t,aes(label= round(value,4),fontface = "bold"),
-    colour = "white",size = 4) +
-    scale_fill_manual(values = pal, breaks=levels(melted_varmatexcl_t$value)[seq(90, 150, by=5)],
-                      na.value="gray")
-    
-    p1<- ggplotly(p) %>% 
-      animation_opts(frame = 500, transition = 0,redraw = TRUE) %>% 
-      animation_slider(currentvalue = list(prefix = "Iter: ", font = list(color="orange")))
+# melted_varmatexcl_t <- merge(res, melted_varmatexcl_t, by = "iter", all = TRUE)
+# 
+#   p<-ggplot(melted_varmatexcl_t,aes(x=Period, y=Sequence,fill=factor(value),frame=iter))+
+#     geom_tile(colour = "grey50") +
+#     scale_y_reverse(breaks=c(1:K)) +
+#     scale_x_continuous(breaks=c(1:T)) +
+#     theme(panel.grid.minor = element_blank()) +
+#     geom_text(x=0.9,y=-0.4,hjust=0,aes(label=paste0("Power:",format(round(power,4)*100,2),"%")),
+#               size=4,fontface="")+ 
+#     theme(legend.position="none")+
+#     geom_label(data = melted_varmatexcl_t,aes(label= round(value,4),fontface = "bold"),
+#     colour = "white",size = 4) +
+#     scale_fill_manual(values = pal, breaks=levels(melted_varmatexcl_t$value)[seq(90, 150, by=5)],
+#                       na.value="gray")
+#     
+#     p1<- ggplotly(p) %>% 
+#       animation_opts(frame = 500, transition = 0,redraw = TRUE) %>% 
+#       animation_slider(currentvalue = list(prefix = "Iter: ", font = list(color="orange")))
     
    # htmlwidgets::saveWidget(as_widget(p1), "index.html")
     
-   
-  
-#relative variance plots
-p <- plot_ly(res, height=500, width=800, x=~iter, y=~Rvariance, name="", type="scatter",
-                 mode="lines", hoverinfo="text", hoverlabel=list(bordercolor=NULL, font=list(size=16)),
-                 text=~paste("Iteration:", iter, "<br>RVariance:", round(Rvariance,3)),
-                 line=list(color="#F8766D", width=4, dash="dash"))%>%
-                 layout(xaxis=list(title="Iteration", titlefont=list(size=18), showline=TRUE,
-                 tickmode="auto", tickfont=list(size=16), nticks=6, ticks="inside",
-                 mirror=TRUE, showgrid=FALSE),    
-                 yaxis=list(title="Relative Variance", titlefont=list(size=18), tickfont=list(size=16),
-                 mirror=TRUE, showline=TRUE),
-                 # title=list(text=paste("m=",input$m,",","T=",input$T,",","rho0=",input$rho0,",","r=",
-                 #input$r,",","effsize=",
-                 #input$effsize,"\n","Removing one pair at each step=",cstus), y =1),
-                 legend=list(orientation="h", xanchor="center", yanchor="bottom", x=0.5, y=-0.5, font=list(size=16)),
-                 margin=list(l=100, r=40))
-print(p)
-p <- p %>% add_trace(y = ~Rvariance_2, name = 'trace 1', mode = 'lines') 
 
+# p = plot(p1, m,T,rho0)
+# 
+# pdf(paste0("",m,"_",T,"_",rho0,"_",".pdf"),width = 15, height = 9)
+# print(p)
+# dev.off()
+
+#end of loop
+}
+pal <- c("#FF4500", "#00FF00", "#00BFFF")
+pal <- setNames(pal, c("0.95", "0.8", "0.5"))
+
+#relative variance plots
+# p <- plot_ly(res, height=500, width=800, x=~iter, y=~Rvariance, name="RVariance", type="scatter",
+#              mode="lines", hoverinfo="text", hoverlabel=list(bordercolor=NULL, font=list(size=16)),
+#              text=~paste("Iteration:", iter, "<br>RVariance:", round(Rvariance, 3)),
+#              line=list(color="#F8766D", width=4, dash="dash"))%>%
+#   layout(xaxis=list(title="Iteration", titlefont=list(size=18), showline=TRUE,
+#                     tickmode="auto", tickfont=list(size=16), nticks=6, ticks="inside",
+#                     mirror=TRUE, showgrid=FALSE),
+#          yaxis=list(title="Relative Variance", titlefont=list(size=18), tickfont=list(size=16),
+#                     mirror=TRUE, showline=TRUE),
+#          # title=list(text=paste("m=",input$m,",","T=",input$T,",","rho0=",input$rho0,",","r=",
+#          #input$r,",","effsize=",
+#          #                       input$effsize,"\n","Removing one pair at each step=",cstus), y =1),
+#          legend=list(orientation="h", xanchor="center", yanchor="bottom", x=0.5, y=-0.5, font=list(size=16)),
+#          margin=list(l=100, r=40))
+# print(p)
+
+#relative variance plots accross cac
+fig <- plot_ly(data = res_m, x = ~iter, y = ~Rvariance,  type="scatter",linetype=~as.factor(r), colors = pal,
+               mode="lines", hoverinfo="text", hoverlabel=list(bordercolor=NULL, font=list(size=14)),
+               text=~paste("Iteration:", iter, "<br>RVariance:", round(Rvariance,3))) %>%
+               layout(xaxis=list(title="Iteration", titlefont=list(size=18), showline=TRUE,
+               tickmode="auto", tickfont=list(size=16), nticks=6, ticks="inside",
+               mirror=TRUE, showgrid=FALSE),
+               yaxis=list(title="Relative variance", titlefont=list(size=18), tickfont=list(size=16),
+               mirror=TRUE, showline=TRUE),
+               title=list(text=paste("m=",m,",","T=",T,",","rho0=",rho0,",",
+               "effsize=",effsize), y =0.99))
+fig
 
