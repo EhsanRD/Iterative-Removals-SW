@@ -14,25 +14,52 @@ SWdesmat <- function(T) {
 #1.048 2.24 2.69
 
 #(K+1-k,T+1-t)
-m=100
-rho0=0.05
+#m=100
+#rho0=0.05
 #r=0.95
 #lbl="Hussey and Hughes model"
 #lbl="Exponential decay model"
 #1 decay 0 HH
 type=1
-T=5
+#T=5
 # 0 removing without any consideration, 1 removing only one pair at each step
 #cnum=0
 effsize=0.2
 
+pal <- c("#FF4500", "#00FF00", "#00BFFF")
+pal <- setNames(pal, c("0.95", "0.8", "0.5"))
 
+plot = function(data, m, T,rho0) {
+  #relative variance plots accross cac
+  plot_ly(data = res_m, x = ~iter, y = ~Rvariance,  type="scatter",linetype=~as.factor(r), colors = pal,
+          mode="lines", hoverinfo="text", hoverlabel=list(bordercolor=NULL, font=list(size=14)),
+          text=~paste("Iteration:", iter, "<br>RVariance:", round(Rvariance,3))) %>%
+    layout(xaxis=list(title="Iteration", titlefont=list(size=18), showline=TRUE,
+                      tickmode="auto", tickfont=list(size=16), nticks=6, ticks="inside",
+                      mirror=TRUE, showgrid=FALSE),
+           yaxis=list(title="Relative variance", titlefont=list(size=18), tickfont=list(size=16),
+                      mirror=TRUE, showline=TRUE),
+           title=list(text=paste("m=",m,",","T=",T,",","rho0=",rho0,",",
+                                 "effsize=",effsize), y =0.99))
+  
+}
+
+
+
+#p1 = list()
+
+for (m in c(50,100)){
+    for (T in c(5,7)){
+      for (rho0 in c(0.01,0.05)){
+        
 res_m <- data.frame(iter=integer(),
-                  variance=integer(),
-                  power=integer(),
-                  r=integer(),
-                  RVariance=integer())
+              variance=integer(),
+              power=integer(),
+              r=integer(),
+              RVariance=integer())
+
 for (r in c(0.95,0.8,0.5)){
+  
 K=T-1
 Xdes <- SWdesmat(T)
 varmatall <- c()
@@ -158,6 +185,19 @@ colnames(res) <- c("iter","variance","power","r","Rvariance")
 
 res_m <- rbind(res_m,res)
 
+#end of loop for cac
+}    
+
+pdf(paste0("G:\\Shared drives\\Ehsan PhD work\\Outputs\\RV\\RV_",m,"_",T,"_",rho0,".pdf"),width = 15, height = 9)
+plot(res_m,m,T,rho0)
+dev.off()
+#end of loop for combinations
+}
+  }
+    }
+
+#heatmap plot 
+
 # melted_varmatexcl_t <- merge(res, melted_varmatexcl_t, by = "iter", all = TRUE)
 # 
 #   p<-ggplot(melted_varmatexcl_t,aes(x=Period, y=Sequence,fill=factor(value),frame=iter))+
@@ -176,22 +216,9 @@ res_m <- rbind(res_m,res)
 #     p1<- ggplotly(p) %>% 
 #       animation_opts(frame = 500, transition = 0,redraw = TRUE) %>% 
 #       animation_slider(currentvalue = list(prefix = "Iter: ", font = list(color="orange")))
-    
-   # htmlwidgets::saveWidget(as_widget(p1), "index.html")
-    
 
-# p = plot(p1, m,T,rho0)
-# 
-# pdf(paste0("",m,"_",T,"_",rho0,"_",".pdf"),width = 15, height = 9)
-# print(p)
-# dev.off()
-
-#end of loop
-}
-pal <- c("#FF4500", "#00FF00", "#00BFFF")
-pal <- setNames(pal, c("0.95", "0.8", "0.5"))
-
-#relative variance plots
+# htmlwidgets::saveWidget(as_widget(p1), "index.html")
+#relative variance plot
 # p <- plot_ly(res, height=500, width=800, x=~iter, y=~Rvariance, name="RVariance", type="scatter",
 #              mode="lines", hoverinfo="text", hoverlabel=list(bordercolor=NULL, font=list(size=16)),
 #              text=~paste("Iteration:", iter, "<br>RVariance:", round(Rvariance, 3)),
@@ -208,16 +235,5 @@ pal <- setNames(pal, c("0.95", "0.8", "0.5"))
 #          margin=list(l=100, r=40))
 # print(p)
 
-#relative variance plots accross cac
-fig <- plot_ly(data = res_m, x = ~iter, y = ~Rvariance,  type="scatter",linetype=~as.factor(r), colors = pal,
-               mode="lines", hoverinfo="text", hoverlabel=list(bordercolor=NULL, font=list(size=14)),
-               text=~paste("Iteration:", iter, "<br>RVariance:", round(Rvariance,3))) %>%
-               layout(xaxis=list(title="Iteration", titlefont=list(size=18), showline=TRUE,
-               tickmode="auto", tickfont=list(size=16), nticks=6, ticks="inside",
-               mirror=TRUE, showgrid=FALSE),
-               yaxis=list(title="Relative variance", titlefont=list(size=18), tickfont=list(size=16),
-               mirror=TRUE, showline=TRUE),
-               title=list(text=paste("m=",m,",","T=",T,",","rho0=",rho0,",",
-               "effsize=",effsize), y =0.99))
-fig
+
 
