@@ -40,17 +40,18 @@ plot_ly(data = res_m, x = ~iter, y = ~Rvariance,  type="scatter",linetype=~as.fa
         mirror=TRUE, showgrid=FALSE),
         yaxis=list(title="Relative variance", titlefont=list(size=18), tickfont=list(size=16),
                     mirror=TRUE, showline=TRUE),
-         title=list(text=paste("m=",m,",","T=",T,",","rho0=",rho0,",",
-                               "effsize=",effsize), y =0.99))
+         title=list(text=paste("plot",l,"\n","m=",m,",","T=",T,",","rho0=",rho0,",",
+                               "effsize=",effsize), y =0.98))
   
 }
 
-p <-list ()
+#p <-list ()
+
 l=0
 
 for (m in c(50,100)){
-  for (T in c(5,7)){
-    for (rho0 in c(0.01,0.05)){
+  for (T in c(5,7,8,10)){
+    for (rho0 in c(0.01,0.05,0.1)){
       l=l+1
       
       res_m <- data.frame(iter=integer(),
@@ -197,7 +198,7 @@ for (m in c(50,100)){
     }
   }
 }
-p
+#p
 
 # combineWidgets(list = p, title = "")
 # htmlwidgets::saveWidget(p, "test.html")
