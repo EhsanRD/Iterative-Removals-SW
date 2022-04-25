@@ -27,7 +27,7 @@ SWdesmat <- function(T) {
 # effsize=0.2
 
 pal <- c("#FF4500", "#00FF00", "#00BFFF")
-pal <- setNames(pal, c("0.95", "0.8", "0.5"))
+pal <- setNames(pal, c("0.95", "0.8"))
 
 plot = function(data, m, T,rho0) {
   #relative variance plots accross cac
@@ -39,20 +39,20 @@ plot_ly(data = res_m, x = ~iter, y = ~Rvariance,  type="scatter",linetype=~as.fa
         tickmode="auto", tickfont=list(size=16), nticks=6, ticks="inside",
         mirror=TRUE, showgrid=FALSE),
         yaxis=list(title="Relative variance", titlefont=list(size=18), tickfont=list(size=16),
-                    mirror=TRUE, showline=TRUE),
+                    mirror=TRUE, showline=TRUE),legend = list(title=list(text='<b> cac </b>')),
          title=list(text=paste("plot",l,"\n","m=",m,",","T=",T,",","rho0=",rho0,",",
-                               "effsize=",effsize), y =0.95,font=list(size = 15)))
+                               "effsize=",effsize),y =0.95,font=list(size = 15)))
   
 }
 
 #p <-list ()
 
 l=0
-cac = c(0.01,0.05)
+cac = c(0.01,0.05,0.1)
 
 for (m in c(50,100)){
-  for (T in c(5,70)){
-    for (rho0 in c(0.01,0.05)){
+  for (T in c(5,7,8,10)){
+    for (rho0 in c(0.01,0.05,0.1)){
       l=l+1
       
       res_m <- data.frame(iter=integer(),
@@ -60,8 +60,9 @@ for (m in c(50,100)){
                           power=integer(),
                           r=integer(),
                           RVariance=integer())
+      
       if (type ==1){cac = cac
-      }    else {
+      }    else if (type ==0){
         cac = 1}
       
       for (r in cac){
