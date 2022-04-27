@@ -233,7 +233,7 @@ server <- function(input, output, session) {
     varmat_excl<-matrix(data=NA, nrow=nrow(Xdes), ncol=ncol(Xdes))
     
     
-    rep_func2 = function(Xdes,varmatall){
+    IC_fun2 = function(Xdes,varmatall){
       for(i in 1:nrow(Xdes)){
         for (j in 1:ncol(Xdes)){
           if(is.na(Xdes[i,j])==TRUE | is.na(Xdes[K-i+1,values$T-j+1])==TRUE){
@@ -256,12 +256,17 @@ server <- function(input, output, session) {
     Xdlist <- list() 
     dlist <- list() 
     Xdlist[[1]] <- Xdes
-    dlist [[1]]<- rep_func2(Xdlist[[1]],varmatall)
+    dlist [[1]]<- IC_fun2(Xdlist[[1]],varmatall)
     varmatall[1] <- varmatall 
     
     #remove all low-infomration content cells and updating.
     for (i in 2:(values$T*K/2)){
-      mval[[i-1]] <- which(rep_func2(Xdlist[[i-1]],varmatall[i-1])==min(rep_func2(Xdlist[[i-1]],varmatall[i-1]),na.rm = TRUE), arr.ind = TRUE)
+      mval[[i-1]] <- which(IC_fun2(Xdlist[[i-1]],varmatall[i-1])==min(IC_fun2(Xdlist[[i-1]],varmatall[i-1]),na.rm = TRUE), arr.ind = TRUE)
+      if (is.na(mval[[i-1]][1])) {
+        dlist[[i-1]]<- NULL
+        #     varmatall <- varmatall[-(i-1)]
+        break
+      }    
       Xdlist[[i]]=Xdlist[[i-1]]
       #if (values$cnum==0){
         for (j in 1:dim(mval[[i-1]])[1]){
@@ -269,13 +274,13 @@ server <- function(input, output, session) {
           Xdlist[[i]][K+1-mval[[i-1]][[j]],values$T+1-mval[[i-1]][[dim(mval[[i-1]])[1]+j]]]<- NA
         }
         #pattern for odd and even periods are like below
-        if (sum(colSums(!is.na(Xdlist[[i]])))==4 | sum(colSums(!is.na(Xdlist[[i]])))==2) {
-          if (sum(colSums(!is.na(dlist[[i-1]])))==2) {
-            dlist[[i-1]]<- NULL
-            varmatall <- varmatall[-(i-1)] 
-          }
-          break
-        }
+        # if (sum(colSums(!is.na(Xdlist[[i]])))==4 | sum(colSums(!is.na(Xdlist[[i]])))==2) {
+        #   if (sum(colSums(!is.na(dlist[[i-1]])))==2) {
+        #     dlist[[i-1]]<- NULL
+        #     varmatall <- varmatall[-(i-1)] 
+        #   }
+        #   break
+        # }
       #}
       # else if (values$cnum==1){
       #   if (dim(mval[[i-1]])[1]==1) {
@@ -296,7 +301,7 @@ server <- function(input, output, session) {
       #   }
       # }
       varmatall[i] <- CRTVarGeneralAdj(Xdlist[[i]],values$m,values$rho0,values$r,values$type)
-      dlist[[i]] = rep_func2(Xdlist[[i]],varmatall[i])
+      dlist[[i]] = IC_fun2(Xdlist[[i]],varmatall[i])
     }
     
     melted_varmatexcl_t <- data.frame( Var1=integer(),
