@@ -11,23 +11,22 @@ SWdesmat <- function(T) {
   return(Xsw)
 }
 #######
-#1.048 2.24 2.69
+#(K+1-k,T+1-t)
+m=50
+rho0=0.05
+r=0.95
+#lbl="Hussey and Hughes model"
+#lbl="Exponential decay model"
+#1 decay 0 HH
+type=1
+T=6
+# 0 removing without any consideration, 1 removing only one pair at each step
+#cnum=0
+effsize=0.2
 
-# #(K+1-k,T+1-t)
-# #m=100
-# #rho0=0.05
-# #r=0.95
-# #lbl="Hussey and Hughes model"
-# #lbl="Exponential decay model"
-# #1 decay 0 HH
-# type=1
-# #T=5
-# # 0 removing without any consideration, 1 removing only one pair at each step
-# #cnum=0
-# effsize=0.2
+# pal <- c("#FF4500", "#00FF00", "#00BFFF")
+# pal <- setNames(pal, c("0.95", "0.8"))
 
-pal <- c("#FF4500", "#00FF00", "#00BFFF")
-pal <- setNames(pal, c("0.95", "0.8"))
 
 plot = function(data, m, T,rho0) {
   #relative variance plots accross cac
@@ -40,32 +39,36 @@ plot_ly(data = res_m, x = ~iter, y = ~Rvariance,  type="scatter",linetype=~as.fa
         mirror=TRUE, showgrid=FALSE),
         yaxis=list(title="Relative variance", titlefont=list(size=18), tickfont=list(size=16),
                     mirror=TRUE, showline=TRUE),legend = list(title=list(text='<b> cac </b>')),
-         title=list(text=paste("plot",l,"\n","m=",m,",","T=",T,",","rho0=",rho0,",",
-                               "effsize=",effsize),y =0.95,font=list(size = 15)))
+         title=list(text=paste(if (type == 1) {paste0("plot"," ",l," ","(","Discrete time decay",")")
+         } else if (type == 0){paste0("plot"," ",l," ","(","Exchangeable",")")},
+         paste0("\n","m=",m,","," ","T=",T,","," ","icc","=",rho0,","," ","effsize=",effsize))
+                              ,y =0.95,font=list(size = 15)))
   
 }
 
-#p <-list ()
+# l=0
+# cac = c(0.5,0.8,0.95)
+# type=0
+# effsize=0.2
 
-l=0
-cac = c(0.01,0.05,0.1)
+# p <-list ()
 
-for (m in c(50,100)){
-  for (T in c(5,7,8,10)){
-    for (rho0 in c(0.01,0.05,0.1)){
-      l=l+1
-      
-      res_m <- data.frame(iter=integer(),
-                          variance=integer(),
-                          power=integer(),
-                          r=integer(),
-                          RVariance=integer())
-      
-      if (type ==1){cac = cac
-      }    else if (type ==0){
-        cac = 1}
-      
-      for (r in cac){
+# for (m in c(50,100)){
+#   for (T in c(5,7)){
+#     for (rho0 in c(0.01,0.05)){
+#       l=l+1
+#       
+    # res_m <- data.frame(iter=integer(),
+    #                       variance=integer(),
+    #                       power=integer(),
+    #                       r=integer(),
+    #                       RVariance=integer())
+      # 
+      # if (type ==1){cac = cac
+      # }    else if (type ==0){
+      #   cac = 1}
+      # 
+      # for (r in cac){
         
         K=T-1
         Xdes <- SWdesmat(T)
@@ -75,7 +78,7 @@ for (m in c(50,100)){
         
         
         #needs to be optimised in repeating function
-        rep_func2 = function(Xdes,varmatall){
+        IC_func2 = function(Xdes,varmatall){
           for(i in 1:nrow(Xdes)){
             for (j in 1:ncol(Xdes)){
               if(is.na(Xdes[i,j])==TRUE | is.na(Xdes[K-i+1,T-j+1])==TRUE){
@@ -97,28 +100,30 @@ for (m in c(50,100)){
         Xdlist <- list()
         dlist <- list()
         Xdlist[[1]] <- Xdes
-        dlist [[1]]<- rep_func2(Xdlist[[1]],varmatall)
+        dlist [[1]]<- IC_func2(Xdlist[[1]],varmatall)
         varmatall[1] <- varmatall
         
         #remove all low-infomration content cells and updating.
         for (i in 2:((T*K)/2)){
-          mval[[i-1]] <- which(rep_func2(Xdlist[[i-1]],varmatall[i-1])==min(rep_func2(Xdlist[[i-1]],varmatall[i-1]),na.rm = TRUE), arr.ind = TRUE)
+          mval[[i-1]] <- which(IC_func2(Xdlist[[i-1]],varmatall[i-1])==min(IC_func2(Xdlist[[i-1]],varmatall[i-1]),na.rm = TRUE), arr.ind = TRUE)
           Xdlist[[i]]=Xdlist[[i-1]]
-          
-          # if (cnum==0){
+            # if (cnum==0){
           # needs to be optimised in repeating loop
           for (j in 1:dim(mval[[i-1]])[1]){
             Xdlist[[i]][mval[[i-1]][[j]],mval[[i-1]][[dim(mval[[i-1]])[1]+j]]]<- NA
             Xdlist[[i]][K+1-mval[[i-1]][[j]],T+1-mval[[i-1]][[dim(mval[[i-1]])[1]+j]]]<- NA
           }
           # pattern for odd and even periods are like below
-          if (sum(colSums(!is.na(Xdlist[[i]])))==4 | sum(colSums(!is.na(Xdlist[[i]])))==2) {
-            if (sum(colSums(!is.na(dlist[[i-1]])))==2){
-              dlist[[i-1]]<- NULL
-              varmatall <- varmatall[-(i-1)] 
-            }
-            break
-          }
+          # if (sum(colSums(!is.na(Xdlist[[i]])))==4 | sum(colSums(!is.na(Xdlist[[i]])))==2) {
+          #   if (sum(colSums(!is.na(dlist[[i-1]])))==2){
+          #     dlist[[i-1]]<- NULL
+          #     varmatall <- varmatall[-(i-1)] 
+          #   }
+          #   break
+          # }
+          #Break the variance if the value is NA
+   
+          # 
           #}
           # else if (cnum==1){
           #     if (dim(mval[[i-1]])[1]==1) {
@@ -140,9 +145,12 @@ for (m in c(50,100)){
           #   }
           #varmatall[i] <- round(CRTVarGeneralAdj(Xdlist[[i]],m,rho0,r,type),10)
           varmatall[i] <- CRTVarGeneralAdj(Xdlist[[i]],m,rho0,r,type)
-          dlist[[i]] = rep_func2(Xdlist[[i]],varmatall[i])
+          dlist[[i]] = IC_func2(Xdlist[[i]],varmatall[i])
         }
         
+        if (is.na(varmatall[i-1])) {
+          break
+        }     
         
         melted_varmatexcl_t <- data.frame( Var1=integer(),
                                            Var2=integer(),
@@ -153,6 +161,7 @@ for (m in c(50,100)){
           varmat_excl<-round(dlist[[i]], 4)
           melted_varmatexcl <- melt(varmat_excl)
           melted_varmatexcl$iter<- i
+          #melted_varmatexcl$elemnt<-  
           melted_varmatexcl_t <- rbind(melted_varmatexcl, melted_varmatexcl_t)
         }
         
@@ -193,16 +202,16 @@ for (m in c(50,100)){
         res_m <- rbind(res_m,res)
         
         #end of loop for cac
-      }    
+      # }    
       #save plots
    
       p[[l]]= plot(res_m,m,T,rho0)
       #print(i)
       #htmlwidgets::saveWidget(p,paste0("G:/Shared drives/Ehsan PhD work/Outputs/RV/RV_","m",m,"_","T",T,"_","icc"," ",rho0,".html"))
       #end of loop for desired settings
-    }
-  }
-}
+#     }
+#   }
+# }
 #p
 
 # combineWidgets(list = p, title = "")
