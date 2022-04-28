@@ -126,7 +126,7 @@ server <- function(input, output, session) {
   })
   
   header1a <- renderPrint({
-    tags$h3("The sequential removal of cells with low-information content")
+    tags$h3("The iterative removal of cells with low-information content")
   })
   header1b <- renderPrint({
     tags$h4("Updating the information content of remaining cells, and iterating")
@@ -261,18 +261,19 @@ server <- function(input, output, session) {
     
     #remove all low-infomration content cells and updating.
     for (i in 2:(values$T*K/2)){
-      mval[[i-1]] <- which(IC_fun2(Xdlist[[i-1]],varmatall[i-1])==min(IC_fun2(Xdlist[[i-1]],varmatall[i-1]),na.rm = TRUE), arr.ind = TRUE)
+      mval[[i-1]] <- tryCatch(which(IC_fun2(Xdlist[[i-1]],varmatall[i-1])==min(IC_fun2(Xdlist[[i-1]],varmatall[i-1]),na.rm = TRUE), arr.ind = TRUE), warning=function(w) NA)
+      #Stop rule
       if (is.na(mval[[i-1]][1])) {
-        dlist[[i-1]]<- NULL
-        #     varmatall <- varmatall[-(i-1)]
+          # dlist[[i-1]]<- NULL
+          # varmatall <- varmatall[-(i-1)]
         break
       }    
       Xdlist[[i]]=Xdlist[[i-1]]
       #if (values$cnum==0){
-        for (j in 1:dim(mval[[i-1]])[1]){
+      tryCatch(for (j in 1:dim(mval[[i-1]])[1]){
           Xdlist[[i]][mval[[i-1]][[j]],mval[[i-1]][[dim(mval[[i-1]])[1]+j]]]<- NA
           Xdlist[[i]][K+1-mval[[i-1]][[j]],values$T+1-mval[[i-1]][[dim(mval[[i-1]])[1]+j]]]<- NA
-        }
+        }, error=function(e) NA)
         #pattern for odd and even periods are like below
         # if (sum(colSums(!is.na(Xdlist[[i]])))==4 | sum(colSums(!is.na(Xdlist[[i]])))==2) {
         #   if (sum(colSums(!is.na(dlist[[i-1]])))==2) {
@@ -304,25 +305,32 @@ server <- function(input, output, session) {
       dlist[[i]] = IC_fun2(Xdlist[[i]],varmatall[i])
     }
     
-    melted_varmatexcl_t <- data.frame( Var1=integer(),
-                                       Var2=integer(),
-                                       value=integer(),
-                                       iter=integer())
-    for (i in 1:length(dlist)){
-      varmat_excl<-round(dlist[[i]], 4)
-      melted_varmatexcl <- melt(varmat_excl)
-      melted_varmatexcl$iter<- i
-      melted_varmatexcl_t <- rbind(melted_varmatexcl, melted_varmatexcl_t)
-    }
+    # melted_varmatexcl_t <- data.frame( Var1=integer(),
+    #                                    Var2=integer(),
+    #                                    value=integer(),
+    #                                    iter=integer())
+    # for (i in 1:length(dlist)){
+    #   varmat_excl<-round(dlist[[i]], 4)
+    #   melted_varmatexcl <- melt(varmat_excl)
+    #   melted_varmatexcl$iter<- i
+    #   melted_varmatexcl_t <- rbind(melted_varmatexcl, melted_varmatexcl_t)
+    # }
+    
+    melted_varmatexcl<- melt(dlist)
+    #varmat_excl$value<-round(varmat_excl$value, 4)
+    melted_desmatexcl<- melt(Xdlist)
+    names(melted_desmatexcl)[names(melted_desmatexcl)=="value"] <- "Xdvalue"
+    melted_varmatexcl_t<- jointdataset <- merge(melted_varmatexcl, melted_desmatexcl, by = c('Var1','Var2','L1'))
+    
+    
+    
     #color_palette <-colorRampPalette(c( "yellow", "red"))(length(table(varmat_excl)))
+    
     pal <- colorRampPalette(brewer.pal(8, "YlOrRd"))(length(unique(melted_varmatexcl_t$value))-1)
     
     names(melted_varmatexcl_t)[names(melted_varmatexcl_t)=="Var1"] <- "Sequence"
     names(melted_varmatexcl_t)[names(melted_varmatexcl_t)=="Var2"] <- "Period"
-    
-    # if(sum(melted_varmatexcl_t$value)==0){
-    #   return() # dont error if no data
-    # }
+    names(melted_varmatexcl_t)[names(melted_varmatexcl_t)=="L1"] <- "iter"
     
     T <- ncol(Xdes)
     K <- nrow(Xdes)
