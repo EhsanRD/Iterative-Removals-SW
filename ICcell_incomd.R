@@ -14,64 +14,71 @@ SWdesmat <- function(T) {
 # Xdlist
 # dlist
 #(K+1-k,T+1-t)
-m=20
-rho0=0.05
-r=1
-#lbl="Hussey and Hughes model"
-#lbl="Exponential decay model"
-#1 decay 0 HH
-type=0
-T=5
-# 0 removing without any consideration, 1 removing only one pair at each step
-#cnum=0
-effsize=0.2
+#  m=50
+# rho0=0.01
+# # r=0.95
+# #lbl="Hussey and Hughes model"
+# #lbl="Exponential decay model"
+# #1 decay 0 HH
+# # type=1
+#  T=7
+# # 0 removing without any consideration, 1 removing only one pair at each step
+# #cnum=0
+# effsize=0.2
 
-# pal <- c("#FF4500", "#00FF00", "#00BFFF")
+#pal <- c("#FF4500", "#00FF00", "#00BFFF")
 # pal <- setNames(pal, c("0.95", "0.8"))
 
 
 plot = function(data, m, T,rho0) {
   #relative variance plots accross cac
-plot_ly(data = res_m, x = ~iter, y = ~Rvariance,  type="scatter",linetype=~as.factor(r), colors = pal,
+plot_ly(data = res_m, x = ~iter, y = ~Effloss,  type="scatter",linetype=~as.factor(r), colors = pal,
         mode="lines", hoverinfo="text", hoverlabel=list(bordercolor=NULL, font=list(size=14)),
-        text=~paste("Iteration:", iter, "<br>RVariance:", round(Rvariance,3),
+        text=~paste("Iteration:", iter, "<br>Effloss:", round(Effloss,2),"%",
         "<br>Power:", format(round(power,4)*100,2),"%")) %>%
         layout(xaxis=list(title="Iteration", titlefont=list(size=18), showline=TRUE,
         tickmode="auto", tickfont=list(size=16), nticks=6, ticks="inside",
         mirror=TRUE, showgrid=FALSE),
-        yaxis=list(title="Relative variance", titlefont=list(size=18), tickfont=list(size=16),
-                    mirror=TRUE, showline=TRUE),legend = list(title=list(text='<b> cac </b>')),
-         title=list(text=paste(if (type == 1) {paste0("plot"," ",l," ","(","Discrete time decay",")")
-         } else if (type == 0){paste0("plot"," ",l," ","(","Exchangeable",")")},
-         paste0("\n","m=",m,","," ","T=",T,","," ","icc","=",rho0,","," ","effsize=",effsize))
-                              ,y =0.95,font=list(size = 15)))
+        yaxis=list(title="Efficiently loss", titlefont=list(size=18), tickfont=list(size=16),
+                    mirror=TRUE, showline=TRUE,range=c(0,100)),legend = list(title=list(text='<b> cac </b>')),
+        title=list(text=paste0("\n","m=",m,","," ","T=",T,","," ","icc","=",rho0,","," ","effsize=",effsize)
+                             ,y =0.95,font=list(size = 15)))
+         # title=list(text=paste(if (type == 1) {paste0("plot"," ",l," ","(","Discrete time decay",")")
+         # } else if (type == 0){paste0("plot"," ",l," ","(","Exchangeable",")")},
+         # paste0("\n","m=",m,","," ","T=",T,","," ","icc","=",rho0,","," ","effsize=",effsize))
+         #                      ,y =0.95,font=list(size = 15)))
   
 }
 
-# l=0
-# cac = c(0.5,0.8,0.95)
-# type=0
-# effsize=0.2
 
-# p <-list ()
+l=0
+cac = c(0.5,0.8,0.95)
+#tp = c(0,1)
+#effsize=0.2
 
-# for (m in c(50,100)){
-#   for (T in c(5,7)){
-#     for (rho0 in c(0.01,0.05)){
-#       l=l+1
-#       
-    # res_m <- data.frame(iter=integer(),
-    #                       variance=integer(),
-    #                       power=integer(),
-    #                       r=integer(),
-    #                       RVariance=integer())
-      # 
-      # if (type ==1){cac = cac
-      # }    else if (type ==0){
-      #   cac = 1}
-      # 
-      # for (r in cac){
-        
+#p <-list ()
+
+for (m in c(50,100)){
+  for (T in c(5,7)){
+    for (rho0 in c(0.01,0.05)){
+      
+      l=l+1
+
+res_m <- data.frame(iter=integer(),
+                      variance=integer(),
+                      power=integer(),
+                      r=integer(),
+                      RVariance=integer(),
+                      Effloss=integer())
+
+
+for (type in c(0,1)){
+  
+  for (r in  if (type ==0){r = 1}  else if (type ==1){r = cac})
+    {
+    
+
+    
         K=T-1
         Xdes <- SWdesmat(T)
         varmatall <- c()
@@ -114,10 +121,11 @@ plot_ly(data = res_m, x = ~iter, y = ~Rvariance,  type="scatter",linetype=~as.fa
         for (i in 2:((T*K)/2)){
           mval[[i-1]] <- tryCatch(which(IC_func2(Xdlist[[i-1]],varmatall[i-1])==min(IC_func2(Xdlist[[i-1]],varmatall[i-1]),na.rm = TRUE), arr.ind = TRUE), warning=function(w) NA)
         
-       if (is.na(mval[[i-1]][1])) {
-         #dlist[[i-1]]<- NULL
-         break
-       }
+          if (is.na(mval[[i-1]][1])) {
+            dlist[[i-1]]<- NULL
+            break
+          }
+          
           Xdlist[[i]]=Xdlist[[i-1]]
           
           
@@ -160,8 +168,12 @@ plot_ly(data = res_m, x = ~iter, y = ~Rvariance,  type="scatter",linetype=~as.fa
           #   }
           #varmatall[i] <- round(CRTVarGeneralAdj(Xdlist[[i]],m,rho0,r,type),10)
           varmatall[i] <- CRTVarGeneralAdj(Xdlist[[i]],m,rho0,r,type)
+          if (is.na(varmatall[i])) {
+            break
+          }
           dlist[[i]] = IC_func2(Xdlist[[i]],varmatall[i])
         }
+        
         
          # melted_varmatexcl_t <- data.frame( Var1=integer(),
          #                                   Var2=integer(),
@@ -181,9 +193,8 @@ plot_ly(data = res_m, x = ~iter, y = ~Rvariance,  type="scatter",linetype=~as.fa
          #varmat_excl$value<-round(varmat_excl$value, 4)
          melted_desmatexcl<- melt(Xdlist)
          names(melted_desmatexcl)[names(melted_desmatexcl)=="value"] <- "Xdvalue"
-         melted_varmatexcl_t<- jointdataset <- merge(melted_varmatexcl, melted_desmatexcl, by = c('Var1','Var2','L1'))
+         melted_varmatexcl_t<- merge(melted_varmatexcl, melted_desmatexcl, by = c('Var1','Var2','L1'))
          
-        
 
         #color_palette <-colorRampPalette(c( "yellow", "red"))(length(table(varmat_excl)))
 
@@ -217,54 +228,55 @@ plot_ly(data = res_m, x = ~iter, y = ~Rvariance,  type="scatter",linetype=~as.fa
         res <- powdf(df,effsize)
         res$r <- r
 
-        res <- cbind(res,res$variance/res$variance[1])
-        colnames(res) <- c("iter","variance","power","r","Rvariance")
+        res <- cbind(res,res$variance[1]/res$variance,(1-(res$variance[1]/res$variance))*100)
+        colnames(res) <- c("iter","variance","power","r","Rvariance","Effloss")
 
-        #res_m <- rbind(res_m,res)
+        res_m <- rbind(res_m,res)
 
-        #end of loop for cac
-      # }
+        #end of loop for type and cac and type
+  }
+}  
       #save plots
 
-      p[[l]]= plot(res_m,m,T,rho0)
+     #p[[l]]= plot(res_m,m,T,rho0)
       #print(i)
       #htmlwidgets::saveWidget(p,paste0("G:/Shared drives/Ehsan PhD work/Outputs/RV/RV_","m",m,"_","T",T,"_","icc"," ",rho0,".html"))
       #end of loop for desired settings
-#     }
-#   }
-# }
-#p
+    }
+  }
+}
+# p
 
 #heatmap plot
+# 
+# melted_varmatexcl_t <- merge(res, melted_varmatexcl_t, by = "iter", all = TRUE)
+# 
+#       p<-ggplot(melted_varmatexcl_t,aes(x=Period, y=Sequence,fill=factor(round(value,4)),frame=iter))+
+#         geom_tile(colour = "grey50") +
+#         scale_y_reverse(breaks=c(1:K)) +
+#         scale_x_continuous(breaks=c(1:T)) +
+#         theme(panel.grid.minor = element_blank()) +
+#         geom_text(x=0.9,y=-0.4,hjust=0,aes(label=paste0("Power:",format(round(power,4)*100,2),"%")),
+#                   size=4,fontface="")+ 
+#         theme(legend.position="none")+
+#         # geom_text(data = melted_varmatexcl_t,aes(Period, Sequence,label= value),
+#         # color = "black",size = 4,check_overlap = TRUE, alpha=1) +
+#         geom_label(data = melted_varmatexcl_t,aes(label= round(value,4),fontface = "bold"),
+#                    colour = "white",size = 4) +
+#         scale_fill_manual(values = pal, breaks=levels(melted_varmatexcl_t$value)[seq(90, 150, by=5)],
+#                           na.value="gray")
+#       
+#       p1<-ggplotly(p) %>% 
+#         animation_opts(frame = 500,transition = 0,redraw = TRUE) %>%  
+#         animation_slider(currentvalue = list(prefix = "Iter: ", font = list(color="orange"))) %>%
+#         partial_bundle(local = FALSE) 
+#    
+#       
+#      p1 %>%
+#         add_trace(mode = "text", text = factor(melted_varmatexcl_t$Xdvalue), type = "scattergl", textfont = list(size = 10)
+#                   ,x = melted_varmatexcl_t$Period,y =melted_varmatexcl_t$Sequence)
 
-melted_varmatexcl_t <- merge(res, melted_varmatexcl_t, by = "iter", all = TRUE)
 
-      p<-ggplot(melted_varmatexcl_t,aes(x=Period, y=Sequence,fill=factor(round(value,4)),frame=iter))+
-        geom_tile(colour = "grey50") +
-        scale_y_reverse(breaks=c(1:K)) +
-        scale_x_continuous(breaks=c(1:T)) +
-        theme(panel.grid.minor = element_blank()) +
-        geom_text(x=0.9,y=-0.4,hjust=0,aes(label=paste0("Power:",format(round(power,4)*100,2),"%")),
-                  size=4,fontface="")+ 
-        theme(legend.position="none")+
-        # geom_text(data = melted_varmatexcl_t,aes(Period, Sequence,label= value),
-        # color = "black",size = 4,check_overlap = TRUE, alpha=1) +
-        geom_label(data = melted_varmatexcl_t,aes(label= round(value,4),fontface = "bold"),
-                   colour = "white",size = 4) +
-        scale_fill_manual(values = pal, breaks=levels(melted_varmatexcl_t$value)[seq(90, 150, by=5)],
-                          na.value="gray")
-      
-      p1<-ggplotly(p) %>% 
-        animation_opts(frame = 500,transition = 0,redraw = TRUE) %>%  
-        animation_slider(currentvalue = list(prefix = "Iter: ", font = list(color="orange"))) %>%
-        partial_bundle(local = FALSE) 
-   
-      
-     p1 %>%   
-        add_trace(mode = "text", text = factor(melted_varmatexcl_t$Xdvalue), type = "scattergl", textfont = list(size = 10)
-                  ,x = melted_varmatexcl_t$Period,y =melted_varmatexcl_t$Sequence)
-      
-      
 # htmlwidgets::saveWidget(as_widget(p1), "index.html")
 #relative variance plot
 # p <- plot_ly(res, height=500, width=800, x=~iter, y=~Rvariance, name="RVariance", type="scatter",
