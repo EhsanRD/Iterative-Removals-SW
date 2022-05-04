@@ -1,5 +1,5 @@
 #setwd("~/Google Drive/Shared drives/Ehsan PhD work/Codes/")
-#setwd("G:\\Shared drives\\Ehsan PhD work\\Codes\\Git\\Iterative-Removals-SW")
+setwd("G:\\Shared drives\\Ehsan PhD work\\Codes\\Git\\Iterative-Removals-SW")
 source("CRTVarAdj_func.R", local=TRUE)
 source("ICcell_appfunc.R", local=TRUE)
 # Functions for generating design matrices
@@ -14,14 +14,14 @@ SWdesmat <- function(T) {
 # Xdlist
 # dlist
 #(K+1-k,T+1-t)
-#  m=50
+# m=20
 # rho0=0.01
-# # r=0.95
-# #lbl="Hussey and Hughes model"
-# #lbl="Exponential decay model"
-# #1 decay 0 HH
-# # type=1
-#  T=7
+# r=0.95
+# # #lbl="Hussey and Hughes model"
+# # #lbl="Exponential decay model"
+# # #1 decay 0 HH
+# # # type=1
+# T=5
 # # 0 removing without any consideration, 1 removing only one pair at each step
 # #cnum=0
 # effsize=0.2
@@ -54,13 +54,13 @@ plot_ly(data = res_m, x = ~iter, y = ~Effloss,  type="scatter",linetype=~as.fact
 l=0
 cac = c(0.5,0.8,0.95)
 #tp = c(0,1)
-#effsize=0.2
+effsize=0.2
 
 #p <-list ()
 
-for (m in c(50,100)){
-  for (T in c(5,7)){
-    for (rho0 in c(0.01,0.05)){
+for (m in c(20,50,100)){
+  for (T in c(5,7,8,10)){
+    for (rho0 in c(0.01,0.05,0.1,0.2)){
       
       l=l+1
 
@@ -74,10 +74,8 @@ res_m <- data.frame(iter=integer(),
 
 for (type in c(0,1)){
   
-  for (r in  if (type ==0){r = 1}  else if (type ==1){r = cac})
+  for (r in  if (type ==0){r = 1}  else {r = cac})
     {
-    
-
     
         K=T-1
         Xdes <- SWdesmat(T)
@@ -167,7 +165,7 @@ for (type in c(0,1)){
           #       }
           #   }
           #varmatall[i] <- round(CRTVarGeneralAdj(Xdlist[[i]],m,rho0,r,type),10)
-          varmatall[i] <- CRTVarGeneralAdj(Xdlist[[i]],m,rho0,r,type)
+          varmatall[i] <- tryCatch(CRTVarGeneralAdj(Xdlist[[i]],m,rho0,r,type),error=function(e) NA)
           if (is.na(varmatall[i])) {
             break
           }
@@ -238,7 +236,7 @@ for (type in c(0,1)){
 }  
       #save plots
 
-     #p[[l]]= plot(res_m,m,T,rho0)
+     p[[l]]= plot(res_m,m,T,rho0)
       #print(i)
       #htmlwidgets::saveWidget(p,paste0("G:/Shared drives/Ehsan PhD work/Outputs/RV/RV_","m",m,"_","T",T,"_","icc"," ",rho0,".html"))
       #end of loop for desired settings
