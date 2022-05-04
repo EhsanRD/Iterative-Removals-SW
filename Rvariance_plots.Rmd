@@ -1,5 +1,5 @@
 ---
-title: "Relative variance across CAC values"
+title: "Efficiently loss  for different settings"
 author: "Ehsan Rezaei"
 date: "23/04/2022"
 output: html_document
@@ -12,8 +12,7 @@ knitr::opts_knit$set(root.dir = 'G:\\Shared drives\\Ehsan PhD work\\Codes\\Git\\
 
 <br><br><br><br>
 ```{r dpi=200,warning=FALSE, message=FALSE,echo=FALSE}
-#model type (Hussey and Hughes or discrete time decay)
-type=1
+
 effsize=0.2
 p <- htmltools::tagList()
 source("ICcell_incomd.R", local=TRUE)
