@@ -1,5 +1,5 @@
 #setwd("~/Google Drive/Shared drives/Ehsan PhD work/Codes/")
-setwd("G:\\Shared drives\\Ehsan PhD work\\Codes\\Git\\Iterative-Removals-SW")
+#setwd("G:\\Shared drives\\Ehsan PhD work\\Codes\\Git\\Iterative-Removals-SW")
 source("CRTVarAdj_func.R", local=TRUE)
 source("ICcell_appfunc.R", local=TRUE)
 # Functions for generating design matrices
@@ -14,17 +14,17 @@ SWdesmat <- function(T) {
 # Xdlist
 # dlist
 #(K+1-k,T+1-t)
-# m=20
-# rho0=0.01
-# r=0.95
-# # #lbl="Hussey and Hughes model"
-# # #lbl="Exponential decay model"
-# # #1 decay 0 HH
-# # # type=1
-# T=5
-# # 0 removing without any consideration, 1 removing only one pair at each step
-# #cnum=0
-# effsize=0.2
+m=20
+rho0=0.05
+r=0.95
+#lbl="Hussey and Hughes model"
+#lbl="Exponential decay model"
+#1 decay 0 HH
+type=1
+T=7
+# 0 removing without any consideration, 1 removing only one pair at each step
+#cnum=0
+effsize=0.2
 
 #pal <- c("#FF4500", "#00FF00", "#00BFFF")
 # pal <- setNames(pal, c("0.95", "0.8"))
@@ -39,7 +39,7 @@ plot_ly(data = res_m, x = ~iter, y = ~Effloss,  type="scatter",linetype=~as.fact
         layout(xaxis=list(title="Iteration", titlefont=list(size=18), showline=TRUE,
         tickmode="auto", tickfont=list(size=16), nticks=6, ticks="inside",
         mirror=TRUE, showgrid=FALSE),
-        yaxis=list(title="Efficiently loss", titlefont=list(size=18), tickfont=list(size=16),
+        yaxis=list(title="Efficiency loss (%)", titlefont=list(size=18), tickfont=list(size=16),
                     mirror=TRUE, showline=TRUE,range=c(0,100)),legend = list(title=list(text='<b> cac </b>')),
         title=list(text=paste0("\n","m=",m,","," ","T=",T,","," ","icc","=",rho0,","," ","effsize=",effsize)
                              ,y =0.95,font=list(size = 15)))
@@ -52,7 +52,7 @@ plot_ly(data = res_m, x = ~iter, y = ~Effloss,  type="scatter",linetype=~as.fact
 
 
 l=0
-cac = c(0.5,0.8,0.95)
+cac = c(0.2,0.5,0.8,0.95)
 #tp = c(0,1)
 effsize=0.2
 
@@ -60,7 +60,7 @@ effsize=0.2
 
 for (m in c(20,50,100)){
   for (T in c(5,7,8,10)){
-    for (rho0 in c(0.01,0.05,0.1,0.2)){
+    for (rho0 in c(0.01,0.05,0.1)){
       
       l=l+1
 
