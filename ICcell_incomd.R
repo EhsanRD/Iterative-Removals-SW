@@ -133,15 +133,6 @@ for (type in c(0,1)){
             Xdlist[[i]][mval[[i-1]][[j]],mval[[i-1]][[dim(mval[[i-1]])[1]+j]]]<- NA
             Xdlist[[i]][K+1-mval[[i-1]][[j]],T+1-mval[[i-1]][[dim(mval[[i-1]])[1]+j]]]<- NA
           }, error=function(e) NA)
-          # pattern for odd and even periods are like below
-          # if (sum(colSums(!is.na(Xdlist[[i]])))==4 | sum(colSums(!is.na(Xdlist[[i]])))==2) {
-          #   if (sum(colSums(!is.na(dlist[[i-1]])))==2){
-          #     dlist[[i-1]]<- NULL
-          #     varmatall <- varmatall[-(i-1)] 
-          #   }
-          #   break
-          # }
-          #Break the variance if the value is NA
             }
           #remove the smallest cluster and period, and removing the corresponding pair. 
           else if (cnum==1){
@@ -157,10 +148,6 @@ for (type in c(0,1)){
                     Xdlist[[i]][mval[[i-1]][[1]],mval[[i-1]][[dim(mval[[i-1]])[1]+1]]]<- NA
                     Xdlist[[i]][K+1-mval[[i-1]][[1]],T+1-mval[[i-1]][[dim(mval[[i-1]])[1]+1]]]<- NA
                   }
-                #pattern for odd and even periods are like below
-                # if ((T %% 2 != 0 & sum(colSums(!is.na(Xdlist[[i]])))==4) | (T %% 2 == 0 & sum(colSums(!is.na(Xdlist[[i]])))==2)) {
-                #   break
-                # }
             }
           #varmatall[i] <- round(CRTVarGeneralAdj(Xdlist[[i]],m,rho0,r,type),10)
           varmatall[i] <- tryCatch(CRTVarGeneralAdj(Xdlist[[i]],m,rho0,r,type),error=function(e) NA)
