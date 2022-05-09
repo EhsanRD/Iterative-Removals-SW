@@ -32,8 +32,8 @@ ui <- fluidPage(
                    max=1,
                    step = 0.05,
                    value = 0.95),
-      # radioButtons("cnum", label = "Remove one pair at each step", 
-      #              choices = list("Yes" = 1, "No" = 0), selected = 0),
+      radioButtons("cnum", label = "Remove one pair at each step",
+                   choices = list("Yes" = 1, "No" = 0), selected = 1),
       sliderInput("effsize", "Effect size:",
                   min = 0.05, max = 1.0,
                   value = 0.2, step = 0.05),
@@ -102,7 +102,7 @@ server <- function(input, output, session) {
     rho0 = 0.05,
     r=0.95,
     type=1,
-    #cnum=0,
+    cnum=1,
     effsize=0.2,
     #acrate=1
   )
@@ -113,7 +113,7 @@ server <- function(input, output, session) {
     values$rho0 <- input$rho0
     values$r <- input$r
     values$type <- input$type
-    #values$cnum <- input$cnum
+    values$cnum <- input$cnum
     values$effsize <- input$effsize
    # values$acrate <- input$acrate
   })
@@ -269,37 +269,27 @@ server <- function(input, output, session) {
         break
       }    
       Xdlist[[i]]=Xdlist[[i-1]]
-      #if (values$cnum==0){
+      if (values$cnum==0){
       tryCatch(for (j in 1:dim(mval[[i-1]])[1]){
           Xdlist[[i]][mval[[i-1]][[j]],mval[[i-1]][[dim(mval[[i-1]])[1]+j]]]<- NA
           Xdlist[[i]][K+1-mval[[i-1]][[j]],values$T+1-mval[[i-1]][[dim(mval[[i-1]])[1]+j]]]<- NA
         }, error=function(e) NA)
-        #pattern for odd and even periods are like below
-        # if (sum(colSums(!is.na(Xdlist[[i]])))==4 | sum(colSums(!is.na(Xdlist[[i]])))==2) {
-        #   if (sum(colSums(!is.na(dlist[[i-1]])))==2) {
-        #     dlist[[i-1]]<- NULL
-        #     varmatall <- varmatall[-(i-1)] 
-        #   }
-        #   break
-        # }
-      #}
-      # else if (values$cnum==1){
-      #   if (dim(mval[[i-1]])[1]==1) {
-      #     Xdlist[[i]][mval[[i-1]][[1]],mval[[i-1]][[dim(mval[[i-1]])[1]+1]]]<- NA
-      #     Xdlist[[i]][K+1-mval[[i-1]][[1]],values$T+1-mval[[i-1]][[dim(mval[[i-1]])[1]+1]]]<- NA
-      #   }else if (dim(mval[[i-1]])[1]==2 & (mval[[i-1]][[2]]==K+1-mval[[i-1]][[1]]) & (mval[[i-1]][[dim(mval[[i-1]])[1]+2]]==values$T+1-mval[[i-1]][[dim(mval[[i-1]])[1]+1]])){
-      #     Xdlist[[i]][mval[[i-1]][[1]],mval[[i-1]][[dim(mval[[i-1]])[1]+1]]]<- NA
-      #     Xdlist[[i]][K+1-mval[[i-1]][[1]],values$T+1-mval[[i-1]][[dim(mval[[i-1]])[1]+1]]]<- NA
-      #   }
-      #   else if (dim(mval[[i-1]])[1]>=2 & (mval[[i-1]][[2]]!=K+1-mval[[i-1]][[1]] | mval[[i-1]][[dim(mval[[i-1]])[1]+2]]!=values$T+1-mval[[i-1]][[dim(mval[[i-1]])[1]+1]])) {
-      #     mval[[i-1]] <- mval[[i-1]][order(mval[[i-1]][,1],mval[[i-1]][,2]),]
-      #     Xdlist[[i]][mval[[i-1]][[1]],mval[[i-1]][[dim(mval[[i-1]])[1]+1]]]<- NA
-      #     Xdlist[[i]][K+1-mval[[i-1]][[1]],values$T+1-mval[[i-1]][[dim(mval[[i-1]])[1]+1]]]<- NA
-      #   }
-      #   #pattern for odd and even periods are like below
-      #   if ((values$T %% 2 != 0 & sum(colSums(!is.na(Xdlist[[i]])))==4) | (values$T %% 2 == 0 & sum(colSums(!is.na(Xdlist[[i]])))==2)) {
-      #     break
-      #   }
+    }
+    #remove the smallest cluster and period, and removing the corresponding pair. Only one pair is removed
+    else if (cnum==1){
+      if (dim(mval[[i-1]])[1]==1) {
+        Xdlist[[i]][mval[[i-1]][[1]],mval[[i-1]][[dim(mval[[i-1]])[1]+1]]]<- NA
+        Xdlist[[i]][K+1-mval[[i-1]][[1]],values$T+1-mval[[i-1]][[dim(mval[[i-1]])[1]+1]]]<- NA
+      }else if (dim(mval[[i-1]])[1]==2 & (mval[[i-1]][[2]]==K+1-mval[[i-1]][[1]]) & (mval[[i-1]][[dim(mval[[i-1]])[1]+2]]==values$T+1-mval[[i-1]][[dim(mval[[i-1]])[1]+1]])){
+        Xdlist[[i]][mval[[i-1]][[1]],mval[[i-1]][[dim(mval[[i-1]])[1]+1]]]<- NA
+        Xdlist[[i]][K+1-mval[[i-1]][[1]],values$T+1-mval[[i-1]][[dim(mval[[i-1]])[1]+1]]]<- NA
+      }
+      else if (dim(mval[[i-1]])[1]>=2 & (mval[[i-1]][[2]]!=K+1-mval[[i-1]][[1]] | mval[[i-1]][[dim(mval[[i-1]])[1]+2]]!=values$T+1-mval[[i-1]][[dim(mval[[i-1]])[1]+1]])) {
+        mval[[i-1]] <- mval[[i-1]][order(mval[[i-1]][,1],mval[[i-1]][,2]),]
+        Xdlist[[i]][mval[[i-1]][[1]],mval[[i-1]][[dim(mval[[i-1]])[1]+1]]]<- NA
+        Xdlist[[i]][K+1-mval[[i-1]][[1]],values$T+1-mval[[i-1]][[dim(mval[[i-1]])[1]+1]]]<- NA
+      }
+    }
       # }
       varmatall[i] <- CRTVarGeneralAdj(Xdlist[[i]],values$m,values$rho0,values$r,values$type)
       dlist[[i]] = IC_fun2(Xdlist[[i]],varmatall[i])
