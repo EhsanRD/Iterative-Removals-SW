@@ -23,7 +23,7 @@ r=0.95
 type=1
 T=7
 # 0 removing without any consideration, 1 removing only one pair at each step
-#cnum=0
+cnum=0
 effsize=0.2
 
 #pal <- c("#FF4500", "#00FF00", "#00BFFF")
@@ -127,7 +127,7 @@ for (type in c(0,1)){
           Xdlist[[i]]=Xdlist[[i-1]]
           
           
-            # if (cnum==0){
+            if (cnum==0){
           # needs to be optimised in repeating loop
           tryCatch(for (j in 1:dim(mval[[i-1]])[1]){
             Xdlist[[i]][mval[[i-1]][[j]],mval[[i-1]][[dim(mval[[i-1]])[1]+j]]]<- NA
@@ -142,28 +142,26 @@ for (type in c(0,1)){
           #   break
           # }
           #Break the variance if the value is NA
-          
-   
-          # 
-          #}
-          # else if (cnum==1){
-          #     if (dim(mval[[i-1]])[1]==1) {
-          #       Xdlist[[i]][mval[[i-1]][[1]],mval[[i-1]][[dim(mval[[i-1]])[1]+1]]]<- NA
-          #       Xdlist[[i]][K+1-mval[[i-1]][[1]],T+1-mval[[i-1]][[dim(mval[[i-1]])[1]+1]]]<- NA
-          #       }else if (dim(mval[[i-1]])[1]==2 & (mval[[i-1]][[2]]==K+1-mval[[i-1]][[1]]) & (mval[[i-1]][[dim(mval[[i-1]])[1]+2]]==T+1-mval[[i-1]][[dim(mval[[i-1]])[1]+1]])){
-          #         Xdlist[[i]][mval[[i-1]][[1]],mval[[i-1]][[dim(mval[[i-1]])[1]+1]]]<- NA
-          #         Xdlist[[i]][K+1-mval[[i-1]][[1]],T+1-mval[[i-1]][[dim(mval[[i-1]])[1]+1]]]<- NA
-          #       }
-          #    else if (dim(mval[[i-1]])[1]>=2 & (mval[[i-1]][[2]]!=K+1-mval[[i-1]][[1]] | mval[[i-1]][[dim(mval[[i-1]])[1]+2]]!=T+1-mval[[i-1]][[dim(mval[[i-1]])[1]+1]])) {
-          #           mval[[i-1]] <- mval[[i-1]][order(mval[[i-1]][,1],mval[[i-1]][,2]),]
-          #           Xdlist[[i]][mval[[i-1]][[1]],mval[[i-1]][[dim(mval[[i-1]])[1]+1]]]<- NA
-          #           Xdlist[[i]][K+1-mval[[i-1]][[1]],T+1-mval[[i-1]][[dim(mval[[i-1]])[1]+1]]]<- NA
-          #         }
-          #       #pattern for odd and even periods are like below
-          #       if ((T %% 2 != 0 & sum(colSums(!is.na(Xdlist[[i]])))==4) | (T %% 2 == 0 & sum(colSums(!is.na(Xdlist[[i]])))==2)) {
-          #         break
-          #       }
-          #   }
+            }
+          #remove the smallest cluster and period, and removing the corresponding pair. 
+          else if (cnum==1){
+              if (dim(mval[[i-1]])[1]==1) {
+                Xdlist[[i]][mval[[i-1]][[1]],mval[[i-1]][[dim(mval[[i-1]])[1]+1]]]<- NA
+                Xdlist[[i]][K+1-mval[[i-1]][[1]],T+1-mval[[i-1]][[dim(mval[[i-1]])[1]+1]]]<- NA
+                }else if (dim(mval[[i-1]])[1]==2 & (mval[[i-1]][[2]]==K+1-mval[[i-1]][[1]]) & (mval[[i-1]][[dim(mval[[i-1]])[1]+2]]==T+1-mval[[i-1]][[dim(mval[[i-1]])[1]+1]])){
+                  Xdlist[[i]][mval[[i-1]][[1]],mval[[i-1]][[dim(mval[[i-1]])[1]+1]]]<- NA
+                  Xdlist[[i]][K+1-mval[[i-1]][[1]],T+1-mval[[i-1]][[dim(mval[[i-1]])[1]+1]]]<- NA
+                }
+             else if (dim(mval[[i-1]])[1]>=2 & (mval[[i-1]][[2]]!=K+1-mval[[i-1]][[1]] | mval[[i-1]][[dim(mval[[i-1]])[1]+2]]!=T+1-mval[[i-1]][[dim(mval[[i-1]])[1]+1]])) {
+                    mval[[i-1]] <- mval[[i-1]][order(mval[[i-1]][,1],mval[[i-1]][,2]),]
+                    Xdlist[[i]][mval[[i-1]][[1]],mval[[i-1]][[dim(mval[[i-1]])[1]+1]]]<- NA
+                    Xdlist[[i]][K+1-mval[[i-1]][[1]],T+1-mval[[i-1]][[dim(mval[[i-1]])[1]+1]]]<- NA
+                  }
+                #pattern for odd and even periods are like below
+                # if ((T %% 2 != 0 & sum(colSums(!is.na(Xdlist[[i]])))==4) | (T %% 2 == 0 & sum(colSums(!is.na(Xdlist[[i]])))==2)) {
+                #   break
+                # }
+            }
           #varmatall[i] <- round(CRTVarGeneralAdj(Xdlist[[i]],m,rho0,r,type),10)
           varmatall[i] <- tryCatch(CRTVarGeneralAdj(Xdlist[[i]],m,rho0,r,type),error=function(e) NA)
           if (is.na(varmatall[i])) {
