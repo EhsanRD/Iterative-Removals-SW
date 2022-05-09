@@ -13,17 +13,17 @@ SWdesmat <- function(T) {
 #######
 # Xdlist
 # dlist
-#(K+1-k,T+1-t)
-m=20
-rho0=0.05
-r=0.95
+# (K+1-k,T+1-t)
+ m=20
+rho0=0.1
+r=1
 #lbl="Hussey and Hughes model"
 #lbl="Exponential decay model"
 #1 decay 0 HH
-type=1
-T=7
+type=0
+T=6
 # 0 removing without any consideration, 1 removing only one pair at each step
-cnum=0
+cnum=1
 effsize=0.2
 
 #pal <- c("#FF4500", "#00FF00", "#00BFFF")
@@ -54,7 +54,7 @@ plot_ly(data = res_m, x = ~iter, y = ~Effloss,  type="scatter",linetype=~as.fact
 l=0
 cac = c(0.2,0.5,0.8,0.95)
 #tp = c(0,1)
-effsize=0.2
+
 
 #p <-list ()
 
@@ -136,19 +136,19 @@ for (type in c(0,1)){
             }
           #remove the smallest cluster and period, and removing the corresponding pair. 
           else if (cnum==1){
-              if (dim(mval[[i-1]])[1]==1) {
-                Xdlist[[i]][mval[[i-1]][[1]],mval[[i-1]][[dim(mval[[i-1]])[1]+1]]]<- NA
-                Xdlist[[i]][K+1-mval[[i-1]][[1]],T+1-mval[[i-1]][[dim(mval[[i-1]])[1]+1]]]<- NA
-                }else if (dim(mval[[i-1]])[1]==2 & (mval[[i-1]][[2]]==K+1-mval[[i-1]][[1]]) & (mval[[i-1]][[dim(mval[[i-1]])[1]+2]]==T+1-mval[[i-1]][[dim(mval[[i-1]])[1]+1]])){
-                  Xdlist[[i]][mval[[i-1]][[1]],mval[[i-1]][[dim(mval[[i-1]])[1]+1]]]<- NA
-                  Xdlist[[i]][K+1-mval[[i-1]][[1]],T+1-mval[[i-1]][[dim(mval[[i-1]])[1]+1]]]<- NA
-                }
-             else if (dim(mval[[i-1]])[1]>=2 & (mval[[i-1]][[2]]!=K+1-mval[[i-1]][[1]] | mval[[i-1]][[dim(mval[[i-1]])[1]+2]]!=T+1-mval[[i-1]][[dim(mval[[i-1]])[1]+1]])) {
+              # if (dim(mval[[i-1]])[1]==1) {
+              #   Xdlist[[i]][mval[[i-1]][[1]],mval[[i-1]][[dim(mval[[i-1]])[1]+1]]]<- NA
+              #   Xdlist[[i]][K+1-mval[[i-1]][[1]],T+1-mval[[i-1]][[dim(mval[[i-1]])[1]+1]]]<- NA
+              #   }else if (dim(mval[[i-1]])[1]==2 & (mval[[i-1]][[2]]==K+1-mval[[i-1]][[1]]) & (mval[[i-1]][[dim(mval[[i-1]])[1]+2]]==T+1-mval[[i-1]][[dim(mval[[i-1]])[1]+1]])){
+              #     Xdlist[[i]][mval[[i-1]][[1]],mval[[i-1]][[dim(mval[[i-1]])[1]+1]]]<- NA
+              #     Xdlist[[i]][K+1-mval[[i-1]][[1]],T+1-mval[[i-1]][[dim(mval[[i-1]])[1]+1]]]<- NA
+              #   }
+            # else if (dim(mval[[i-1]])[1]>=2 & (mval[[i-1]][[2]]!=K+1-mval[[i-1]][[1]] | mval[[i-1]][[dim(mval[[i-1]])[1]+2]]!=T+1-mval[[i-1]][[dim(mval[[i-1]])[1]+1]])) {
                     mval[[i-1]] <- mval[[i-1]][order(mval[[i-1]][,1],mval[[i-1]][,2]),]
                     Xdlist[[i]][mval[[i-1]][[1]],mval[[i-1]][[dim(mval[[i-1]])[1]+1]]]<- NA
                     Xdlist[[i]][K+1-mval[[i-1]][[1]],T+1-mval[[i-1]][[dim(mval[[i-1]])[1]+1]]]<- NA
                   }
-            }
+           # }
           #varmatall[i] <- round(CRTVarGeneralAdj(Xdlist[[i]],m,rho0,r,type),10)
           varmatall[i] <- tryCatch(CRTVarGeneralAdj(Xdlist[[i]],m,rho0,r,type),error=function(e) NA)
           if (is.na(varmatall[i])) {
