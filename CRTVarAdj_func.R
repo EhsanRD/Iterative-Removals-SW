@@ -26,7 +26,11 @@ if (identical(M1,Xmat)==TRUE){
     if(type==1) {
       Vi <- diag(sig2,T) + sig2CP*(r^abs(matrix(1:T,nrow=T, ncol=T, byrow=FALSE) - matrix(1:T,nrow=T, ncol=T, byrow=TRUE)))
     }
-  }  
+}  
+  #Need to create the Vi for the *original* design matrix
+  #and then chop out the relevant row and column
+  #T+length(t) is to allow for this.
+  
     else {
     
     T <- ncol(M1)
