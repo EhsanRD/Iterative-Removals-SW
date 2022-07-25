@@ -176,8 +176,14 @@ for (type in c(0,1)){
         # varmat_excl<-matrix(data=NA, nrow=nrow(Xdes), ncol=ncol(Xdes))
 
         K=T-1
-        nIMP=2
         Xdes <- SWdesmatIMP(K+1,nIMP)
+        
+        #If there are any periods with only 2 treatment sequences, with 
+        #differential exposure, cannot calculate the information content 
+        #of either of these two sequences.
+        #Need to flag that the cells in these periods MUST be included and
+        #thus do not have an information content.
+        
         Xdes_colsum <- colSums(Xdes, na.rm=TRUE)
         Xdes_nasums <- colSums(is.na(Xdes) == FALSE)
         varmatall<- CRTVarGeneralAdj(Xdes,m,rho0,r,type)
@@ -192,13 +198,19 @@ for (type in c(0,1)){
                 varmat_excl[K-i+1,T+nIMP-j+1] <- NA
               }
               else if(is.na(Xdes[i,j])==FALSE & is.na(Xdes[K-i+1,T+nIMP-j+1])==FALSE) {
+                if(Xdes_colsum[j] == 1 & Xdes_nasums[j]==2) varmat_excl[i,j] <- 20
+                if(Xdes_colsum[T+nIMP-j+1] == 1 & Xdes_nasums[T+nIMP-j+1]==2) varmat_excl[K-i+1,T+nIMP-j+1] <- 20
+                else{
                 Xdesij <- Xdes
                 Xdesij[i,j] <- NA
                 Xdesij[K-i+1,T+nIMP-j+1] <- NA
                 varmat_excl[i,j] <- CRTVarGeneralAdj(Xdesij,m,rho0,r,type)/varmatall
                 varmat_excl[K-i+1,T+nIMP-j+1] <- varmat_excl[i,j]
+                if(is.na(varmat_excl[i,j])) varmat_excl[i,j] <- 20
+                if(is.na(varmat_excl[K-i+1,T+nIMP-j+1])) varmat_excl[K-i+1,T+nIMP-j+1] <- 20
               }
             }
+           }
           }
           return(varmat_excl)
         }
@@ -226,7 +238,16 @@ for (type in c(0,1)){
           
           Xdlist[[i]]=Xdlist[[i-1]]
           
+          # Xdes_colsum <- colSums(Xdes, na.rm=TRUE)
+          # Xdes_nasums <- colSums(is.na(Xdes) == FALSE)
           
+          # Xdes0 <- (colSums(Xdlist[[i]]==0, na.rm=TRUE) ==2)
+          # Xdes1 <- (colSums(Xdlist[[i]]==1, na.rm=TRUE) ==2)
+          # Xdes01 <- colSums(rbind(Xdes0, Xdes1))
+          # if (Xdes01 == 2) 
+      
+          # colSums(Xdlist[[18]], na.rm=TRUE)
+                  
             if (cnum==0){
           # loop is repeating, it might be better to adjust code
           tryCatch(for (j in 1:dim(mval[[i-1]])[1]){
@@ -252,9 +273,10 @@ for (type in c(0,1)){
           #varmatall[i] <- round(CRTVarGeneralAdj(Xdlist[[i]],m,rho0,r,type),10)
           varmatall[i] <- tryCatch(CRTVarGeneralAdj(Xdlist[[i]],m,rho0,r,type),error=function(e) NA)
           if (is.na(varmatall[i])) {
+            Xdlist[[i]]<- NULL
             break
           }
-          dlist[[i]] = IC_func2(Xdlist[[i]],varmatall[i])
+          dlist[[i]] =IC_func2(Xdlist[[i]],varmatall[i])
         }
         
         
