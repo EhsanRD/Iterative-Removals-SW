@@ -32,7 +32,7 @@ if (identical(M1,Xmat)==TRUE){
   #T+length(t) is to allow for this.
   
     else {
-    
+
     T <- ncol(M1)
     K <- nrow(Xmat)
     Xvec <- as.vector(t(M1))
