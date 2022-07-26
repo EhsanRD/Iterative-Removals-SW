@@ -30,6 +30,13 @@ SWdesmat <- function(T) {
   return(Xsw)
 }
 
+###SWdesmat with implementation periods
+SWdesmatIMP <- function(T, nIMP) {
+  Xsw <- SWdesmat(T+nIMP)
+  for(i in 1:T) Xsw[i, (i+1):(i+nIMP)] <- NA
+  
+  return(Xsw[1:(T-1),])
+}
 
 #Designs missing cluster-period cells:
 
