@@ -38,7 +38,7 @@ r=0.95
 #1 decay 0 HH
 type=1
 T=5
-nIMP=2
+nIMP=1
 # 0 removing without any consideration, 1 removing only one pair at each step
 cnum=1
 effsize=0.32
@@ -206,8 +206,8 @@ for (type in c(0,1)){
                 Xdesij[K-i+1,T+nIMP-j+1] <- NA
                 varmat_excl[i,j] <- CRTVarGeneralAdj(Xdesij,m,rho0,r,type)/varmatall
                 varmat_excl[K-i+1,T+nIMP-j+1] <- varmat_excl[i,j]
-                if(is.na(varmat_excl[i,j])) varmat_excl[i,j] <- 20
-                if(is.na(varmat_excl[K-i+1,T+nIMP-j+1])) varmat_excl[K-i+1,T+nIMP-j+1] <- 20
+                # if(is.na(varmat_excl[i,j])) varmat_excl[i,j] <- 20
+                # if(is.na(varmat_excl[K-i+1,T+nIMP-j+1])) varmat_excl[K-i+1,T+nIMP-j+1] <- 20
               }
             }
            }
@@ -237,16 +237,6 @@ for (type in c(0,1)){
           }
           
           Xdlist[[i]]=Xdlist[[i-1]]
-          
-          # Xdes_colsum <- colSums(Xdes, na.rm=TRUE)
-          # Xdes_nasums <- colSums(is.na(Xdes) == FALSE)
-          
-          # Xdes0 <- (colSums(Xdlist[[i]]==0, na.rm=TRUE) ==2)
-          # Xdes1 <- (colSums(Xdlist[[i]]==1, na.rm=TRUE) ==2)
-          # Xdes01 <- colSums(rbind(Xdes0, Xdes1))
-          # if (Xdes01 == 2) 
-      
-          # colSums(Xdlist[[18]], na.rm=TRUE)
                   
             if (cnum==0){
           # loop is repeating, it might be better to adjust code
@@ -304,6 +294,7 @@ for (type in c(0,1)){
         #color_palette <-colorRampPalette(c( "yellow", "red"))(length(table(varmat_excl)))
 
         pal <- colorRampPalette(brewer.pal(8, "YlOrRd"))(length(unique(melted_varmatexcl_t$value))-1)
+        if(sum(melted_varmatexcl_t$value==20, na.rm=TRUE) > 0)    pal[length(table(melted_varmatexcl_t$value))]<- "#000000"
 
         names(melted_varmatexcl_t)[names(melted_varmatexcl_t)=="Var1"] <- "Sequence"
         names(melted_varmatexcl_t)[names(melted_varmatexcl_t)=="Var2"] <- "Period"
@@ -371,7 +362,7 @@ for (type in c(0,1)){
       #          colour = "white",size = 4) +
       geom_text(aes(label= Xdvalue),color = "black",size = 7, check_overlap = T)+
       #scale_fill_distiller
-      scale_fill_manual(values = pal,breaks=levels(melted_varmatexcl_t$value)[seq(90, 150, by=5)],na.value="gray")
+      scale_fill_manual(values = pal,na.value="gray")
       
     p1<-ggplotly(p) %>% 
       animation_opts(frame = 500,transition =0,redraw = TRUE) %>%  
