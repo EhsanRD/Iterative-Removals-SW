@@ -1,3 +1,11 @@
+# Functions for generating design matrices
+SWdesmat <- function(T) {
+  Xsw <- matrix(data=0, ncol = T, nrow = (T-1))
+  for(i in 1:(T-1)) {
+    Xsw[i,(i+1):T] <- 1
+  }
+  return(Xsw)
+}
 ####################
 CRTVarGeneralAdj <- function(Xmat, m, rho0, r, type) {
   totalvar <- 1
