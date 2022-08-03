@@ -51,15 +51,15 @@ ui <- fluidPage(
                  plotOutput("varplot"),
                  textOutput("ICcelltext")
         ),
-        tabPanel("Information content of sequences",
-                 plotOutput("varSEQplot"),
-                 textOutput("ICseqtext")
-        ),
-        tabPanel("Information content of periods",  
-                 plotOutput("varPERplot"),
-                 textOutput("ICpertext")
-        ),
-        tabPanel("Information content of cells (New)",  
+        # tabPanel("Information content of sequences",
+        #          plotOutput("varSEQplot"),
+        #          textOutput("ICseqtext")
+        # ),
+        # tabPanel("Information content of periods",
+        #          plotOutput("varPERplot"),
+        #          textOutput("ICpertext")
+        # ),
+        tabPanel("Information content of cell pairs",  
                  plotOutput("varMainplot"),
                  textOutput("")
         ),
@@ -73,9 +73,9 @@ ui <- fluidPage(
                  plotlyOutput("Varsplot"),
                  textOutput("ICvartext")
         ),
-        tabPanel("Relative Variance",
+        tabPanel("Efficiency loss",
                  uiOutput("plotheader3a"), uiOutput("plotheader3b"),
-                 plotlyOutput("RVarsplot"),
+                 plotlyOutput("Efflossplot"),
                  textOutput("ICRvartext")
         ),
         tabPanel("Power",  
@@ -248,86 +248,86 @@ server <- function(input, output, session) {
     
   })
   
-  output$varSEQplot<-renderPlot({
-    
-    Xdes <- SWdesmat(values$T)
-    
-    
-    #If there are any periods with only 2 treatment sequences, with
-    #differential exposure, cannot calculate the information content
-    #of either of these two sequences.
-    #Need to flag that the cells in these periods MUST be included and
-    #thus do not have an information content.
-    
-    varmatall <- CRTVarGeneral(Xdes,values$m,values$rho0,values$r,values$type)
-    varmat_excl<-matrix(data=NA, nrow=nrow(Xdes), ncol=ncol(Xdes))
-    
-    for (i in 1:nrow(Xdes)){
-      Xdesij <- Xdes
-      Xdesij[i,] <- NA
-      varmat_excl[i,] <- CRTVarGeneral(Xdesij,values$m,values$rho0,values$r,values$type)/varmatall
-    }
-    
-    
-    varmat_excl<-round(varmat_excl, 4)
-    melted_varmatexcl <- melt(varmat_excl)
-    names(melted_varmatexcl)[names(melted_varmatexcl)=="Var1"] <- "Sequence"
-    names(melted_varmatexcl)[names(melted_varmatexcl)=="Var2"] <- "Period"
-    
-    color_palette <-colorRampPalette(c( "yellow", "red"))(length(table(varmat_excl)))
-    # if(sum(melted_varmatexcl$value==2.2772, na.rm=TRUE) > 0)    
-    #   color_palette[length(table(melted_varmatexcl$value))]<- "#000000"
-    
-    T <- ncol(Xdes)
-    K <- nrow(Xdes)
-    
-    ggplot(data = melted_varmatexcl, aes(x=Period, y=Sequence, fill = factor(value))) +
-      ggtitle("") +
-      geom_tile(colour = "grey50") +
-      scale_y_reverse(breaks=c(1:K)) +
-      scale_x_continuous(breaks=c(1:T)) +
-      theme(panel.grid.minor = element_blank()) +
-      geom_text(aes(Period, Sequence, label = round(value,4)), color = "black", size = 5) +
-      scale_fill_manual(values = color_palette, breaks=levels(melted_varmatexcl$value)[seq(90, 150, by=5)])
-    
-    
-  })  
-  
-  
-  output$varPERplot<-renderPlot({
-    
-    Xdes <- SWdesmat(values$T)
-    
-    varmatall <- CRTVarGeneral(Xdes,values$m,values$rho0,values$r,values$type)
-    varmat_excl<-matrix(data=NA, nrow=nrow(Xdes), ncol=ncol(Xdes))
-    
-    for (j in 1:ncol(Xdes)){
-      varmat_excl[,j] <- CRTVarGeneralT(Xdes,j,values$m,values$rho0,values$r,values$type)/varmatall
-    }
-    
-    varmat_excl<-round(varmat_excl, 4)
-    melted_varmatexcl <- melt(varmat_excl)
-    names(melted_varmatexcl)[names(melted_varmatexcl)=="Var1"] <- "Sequence"
-    names(melted_varmatexcl)[names(melted_varmatexcl)=="Var2"] <- "Period"
-    
-    color_palette <-colorRampPalette(c( "yellow", "red"))(length(table(varmat_excl)))
-    # if(sum(melted_varmatexcl$value==2.2772, na.rm=TRUE) > 0)    
-    #   color_palette[length(table(melted_varmatexcl$value))]<- "#000000"
-    
-    T <- ncol(Xdes)
-    K <- nrow(Xdes)
-    
-    ggplot(data = melted_varmatexcl, aes(x=Period, y=Sequence, fill = factor(value))) +
-      ggtitle("") +
-      geom_tile(colour = "grey50") +
-      scale_y_reverse(breaks=c(1:K)) +
-      scale_x_continuous(breaks=c(1:T)) +
-      theme(panel.grid.minor = element_blank()) +
-      geom_text(aes(Period, Sequence, label = round(value,4)), color = "black", size = 5) +
-      scale_fill_manual(values = color_palette, breaks=levels(melted_varmatexcl$value)[seq(90, 150, by=5)])
-    
-    
-  })
+  # output$varSEQplot<-renderPlot({
+  #   
+  #   Xdes <- SWdesmat(values$T)
+  #   
+  #   
+  #   #If there are any periods with only 2 treatment sequences, with
+  #   #differential exposure, cannot calculate the information content
+  #   #of either of these two sequences.
+  #   #Need to flag that the cells in these periods MUST be included and
+  #   #thus do not have an information content.
+  #   
+  #   varmatall <- CRTVarGeneral(Xdes,values$m,values$rho0,values$r,values$type)
+  #   varmat_excl<-matrix(data=NA, nrow=nrow(Xdes), ncol=ncol(Xdes))
+  #   
+  #   for (i in 1:nrow(Xdes)){
+  #     Xdesij <- Xdes
+  #     Xdesij[i,] <- NA
+  #     varmat_excl[i,] <- CRTVarGeneral(Xdesij,values$m,values$rho0,values$r,values$type)/varmatall
+  #   }
+  #   
+  #   
+  #   varmat_excl<-round(varmat_excl, 4)
+  #   melted_varmatexcl <- melt(varmat_excl)
+  #   names(melted_varmatexcl)[names(melted_varmatexcl)=="Var1"] <- "Sequence"
+  #   names(melted_varmatexcl)[names(melted_varmatexcl)=="Var2"] <- "Period"
+  #   
+  #   color_palette <-colorRampPalette(c( "yellow", "red"))(length(table(varmat_excl)))
+  #   # if(sum(melted_varmatexcl$value==2.2772, na.rm=TRUE) > 0)    
+  #   #   color_palette[length(table(melted_varmatexcl$value))]<- "#000000"
+  #   
+  #   T <- ncol(Xdes)
+  #   K <- nrow(Xdes)
+  #   
+  #   ggplot(data = melted_varmatexcl, aes(x=Period, y=Sequence, fill = factor(value))) +
+  #     ggtitle("") +
+  #     geom_tile(colour = "grey50") +
+  #     scale_y_reverse(breaks=c(1:K)) +
+  #     scale_x_continuous(breaks=c(1:T)) +
+  #     theme(panel.grid.minor = element_blank()) +
+  #     geom_text(aes(Period, Sequence, label = round(value,4)), color = "black", size = 5) +
+  #     scale_fill_manual(values = color_palette, breaks=levels(melted_varmatexcl$value)[seq(90, 150, by=5)])
+  #   
+  #   
+  # })  
+  # 
+  # 
+  # output$varPERplot<-renderPlot({
+  #   
+  #   Xdes <- SWdesmat(values$T)
+  #   
+  #   varmatall <- CRTVarGeneral(Xdes,values$m,values$rho0,values$r,values$type)
+  #   varmat_excl<-matrix(data=NA, nrow=nrow(Xdes), ncol=ncol(Xdes))
+  #   
+  #   for (j in 1:ncol(Xdes)){
+  #     varmat_excl[,j] <- CRTVarGeneralT(Xdes,j,values$m,values$rho0,values$r,values$type)/varmatall
+  #   }
+  #   
+  #   varmat_excl<-round(varmat_excl, 4)
+  #   melted_varmatexcl <- melt(varmat_excl)
+  #   names(melted_varmatexcl)[names(melted_varmatexcl)=="Var1"] <- "Sequence"
+  #   names(melted_varmatexcl)[names(melted_varmatexcl)=="Var2"] <- "Period"
+  #   
+  #   color_palette <-colorRampPalette(c( "yellow", "red"))(length(table(varmat_excl)))
+  #   # if(sum(melted_varmatexcl$value==2.2772, na.rm=TRUE) > 0)    
+  #   #   color_palette[length(table(melted_varmatexcl$value))]<- "#000000"
+  #   
+  #   T <- ncol(Xdes)
+  #   K <- nrow(Xdes)
+  #   
+  #   ggplot(data = melted_varmatexcl, aes(x=Period, y=Sequence, fill = factor(value))) +
+  #     ggtitle("") +
+  #     geom_tile(colour = "grey50") +
+  #     scale_y_reverse(breaks=c(1:K)) +
+  #     scale_x_continuous(breaks=c(1:T)) +
+  #     theme(panel.grid.minor = element_blank()) +
+  #     geom_text(aes(Period, Sequence, label = round(value,4)), color = "black", size = 5) +
+  #     scale_fill_manual(values = color_palette, breaks=levels(melted_varmatexcl$value)[seq(90, 150, by=5)])
+  #   
+  #   
+  # })
   output$varMainplot<-renderPlot({
     
     Xdes <- SWdesmat(values$T)
@@ -492,14 +492,16 @@ server <- function(input, output, session) {
     # Calculate power for a set of variances, a given effect size and sig level
     powdf <- function(df, effsize, siglevel=0.05){
       powvals <- apply(df, MARGIN=2, pow, effsize, siglevel)
-      powdf <- data.frame(iter, df$varmatall,powvals)
+      powdf <- data.frame(iter, df$varmatall,powvals*100)
       colnames(powdf) <- c("iter","variance","power")
       return(powdf)
     }
     res <- powdf(df,values$effsize)
+    res$r <- values$r
     
-    res <- cbind(res,res$variance/res$variance[1])
-    colnames(res) <- c("iter","variance","power","Rvariance") 
+    
+    res <- cbind(res,res$variance[1]/res$variance,(1-(res$variance[1]/res$variance))*100)
+    colnames(res) <- c("iter","variance","power","r","Rvariance","Effloss")
     
     melted_varmatexcl_t <- merge(res, melted_varmatexcl_t, by = "iter", all = TRUE)
     
@@ -554,45 +556,45 @@ server <- function(input, output, session) {
       print(p)
     })
 
-    output$RVarsplot<-renderPlotly({
+       output$Efflossplot<-renderPlotly({
+         
+         #cstus=if(values$cnum==1){cstus="YES"}else{cstus="NO"}
+         p <- plot_ly(res, height=500, width=800, x=~iter, y=~Effloss, name="Effloss", type="scatter",
+                      mode="lines", hoverinfo="text", hoverlabel=list(bordercolor=NULL, font=list(size=16)),
+                      text=~paste("Iteration:", iter, "<br>Effloss:", format(round(Effloss,2),2),"%"),
+                      line=list(color="#F8766D", width=4, dash="dash"))%>%
+           layout(xaxis=list(title="Iteration", titlefont=list(size=18), showline=TRUE,
+                             tickmode="auto", tickfont=list(size=16), nticks=6, ticks="inside",
+                             mirror=TRUE, showgrid=FALSE),
+                  yaxis=list(title="Efficiency loss (%)", titlefont=list(size=18), tickfont=list(size=16),
+                             mirror=TRUE, showline=TRUE),
+                  # title=list(text=paste("m=",input$m,",","T=",input$T,",","rho0=",input$rho0,",","r=",
+                  #input$r,",","effsize=",
+                  #                       input$effsize,"\n","Removing one pair at each step=",cstus), y =1),
+                  legend=list(orientation="h", xanchor="center", yanchor="bottom", x=0.5, y=-0.5, font=list(size=16)),
+                  margin=list(l=100, r=40))
+         print(p)
+       })
+       
 
-      #cstus=if(values$cnum==1){cstus="YES"}else{cstus="NO"}
-      p <- plot_ly(res, height=500, width=800, x=~iter, y=~Rvariance, name="RVariance", type="scatter",
-                   mode="lines", hoverinfo="text", hoverlabel=list(bordercolor=NULL, font=list(size=16)),
-                   text=~paste("Iteration:", iter, "<br>RVariance:", round(Rvariance, 3)),
-                   line=list(color="#F8766D", width=4, dash="dash"))%>%
-        layout(xaxis=list(title="Iteration", titlefont=list(size=18), showline=TRUE,
-                          tickmode="auto", tickfont=list(size=16), nticks=6, ticks="inside",
-                          mirror=TRUE, showgrid=FALSE),
-               yaxis=list(title="Relative Variance", titlefont=list(size=18), tickfont=list(size=16),
-                          mirror=TRUE, showline=TRUE),
-               # title=list(text=paste("m=",input$m,",","T=",input$T,",","rho0=",input$rho0,",","r=",
-               #input$r,",","effsize=",
-               #                       input$effsize,"\n","Removing one pair at each step=",cstus), y =1),
-               legend=list(orientation="h", xanchor="center", yanchor="bottom", x=0.5, y=-0.5, font=list(size=16)),
-               margin=list(l=100, r=40))
-      print(p)
-    })
-
-    output$Powplot<-renderPlotly({
-
-      #cstus=if(values$cnum==1){cstus="YES"}else{cstus="NO"}
-      p <- plot_ly(res, height=500, width=800, x=~iter, y=~power, name="Power", type="scatter",
-                   mode="lines", hoverinfo="text", hoverlabel=list(bordercolor=NULL, font=list(size=16)),
-                   text=~paste("Iteration:", iter, "<br>Power:", round(power, 3)),
-                   line=list(color="#00BA38", width=4, dash="dash"))%>%
-        layout(xaxis=list(title="Iteration", titlefont=list(size=18), showline=TRUE,
-                          tickmode="auto", tickfont=list(size=16), nticks=6, ticks="inside",
-                          mirror=TRUE, showgrid=FALSE),
-               yaxis=list(title="Power", titlefont=list(size=18), tickfont=list(size=16),
-                          mirror=TRUE, showline=TRUE),
-               # title=list(text=paste("m=",input$m,",","T=",input$T,",","rho0=",input$rho0,",","r=",
-               # input$r,",","effsize=",
-               #                       input$effsize,"\n","Removing one pair at each step=",cstus), y = 0.15),
-               legend=list(orientation="h", xanchor="center", yanchor="bottom", x=0.5, y=-0.5, font=list(size=16)),
-               margin=list(l=100, r=60))
-      print(p)
-    })
+       output$Powplot<-renderPlotly({
+         #cstus=if(values$cnum==1){cstus="YES"}else{cstus="NO"}
+         p <- plot_ly(res, height=500, width=800, x=~iter, y=~power, name="Power", type="scatter",
+                      mode="lines", hoverinfo="text", hoverlabel=list(bordercolor=NULL, font=list(size=16)),
+                      text=~paste("Iteration:", iter, "<br>Power:",  format(round(power,2),2),"%"),
+                      line=list(color="#00BA38", width=4, dash="dash"))%>%
+           layout(xaxis=list(title="Iteration", titlefont=list(size=18), showline=TRUE,
+                             tickmode="auto", tickfont=list(size=16), nticks=6, ticks="inside",
+                             mirror=TRUE, showgrid=FALSE),
+                  yaxis=list(title="Power (%)", titlefont=list(size=18), tickfont=list(size=16),
+                             mirror=TRUE, showline=TRUE),
+                  # title=list(text=paste("m=",input$m,",","T=",input$T,",","rho0=",input$rho0,",","r=",
+                  # input$r,",","effsize=",
+                  #                       input$effsize,"\n","Removing one pair at each step=",cstus), y = 0.15),
+                  legend=list(orientation="h", xanchor="center", yanchor="bottom", x=0.5, y=-0.5, font=list(size=16)),
+                  margin=list(l=100, r=60))
+         print(p)
+       })
     
     ####close animated image### 
     # Return a list containing the filename
