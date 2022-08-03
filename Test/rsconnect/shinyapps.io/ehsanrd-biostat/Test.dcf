@@ -1,0 +1,13 @@
+name: Test
+title: Test
+username:
+account: ehsanrd-biostat
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 6731509
+bundleId: 6159955
+url: https://ehsanrd-biostat.shinyapps.io/Test/
+when: 1659491497.67999
+lastSyncTime: 1659491497.67999
+asMultiple: FALSE
+asStatic: FALSE
