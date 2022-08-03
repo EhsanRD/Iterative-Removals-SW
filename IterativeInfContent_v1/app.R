@@ -6,7 +6,7 @@ source("CRTVarAdj_func.R", local=TRUE)
 # Define UI for application that draws a histogram
 ui <- fluidPage(
   # Application title
-  titlePanel(h1("Information content of cluster-period cells of SW designs",h2("Previous Version (Main Approach, No Pause)"),h3("Source: Jessica Kasza and Kelsey Grantham GitHub"))),
+  titlePanel(h1("Information content of progressively reduced stepped wedge designs",h2("Without Play Button"),h3(""))),
   # Sidebar with a slider input for number of bins
   
   sidebarLayout(
@@ -32,10 +32,9 @@ ui <- fluidPage(
                    max=1,
                    step = 0.05,
                    value = 0.95),
-      radioButtons("cnum", label = "Remove one pair at each step",
-                   choices = list("Yes" = 1, "No" = 0), selected = 1),
-      # radioButtons("cnum", label = "Remove one pair at each step", 
-      #              choices = list("Yes" = 1, "No" = 0), selected = 0),
+      # radioButtons("cnum", label = "Remove one pair at each step",
+      #              choices = list("Yes" = 1, "No" = 0), selected = 1),
+    
       sliderInput("effsize", "Effect size:",
                   min = 0.05, max = 1.0,
                   value = 0.2, step = 0.01),
