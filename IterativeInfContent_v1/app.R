@@ -1,5 +1,5 @@
 #setwd("~/Google Drive/Shared drives/Ehsan PhD work/Codes")
-setwd("G:\\Shared drives\\Ehsan PhD work\\Codes\\Git\\Iterative-Removals-SW")
+#setwd("G:\\Shared drives\\Ehsan PhD work\\Codes\\Git\\Iterative-Removals-SW")
 source("ICcell_appfunc.R", local=TRUE)
 source("CRTVarAdj_func.R", local=TRUE)
 
