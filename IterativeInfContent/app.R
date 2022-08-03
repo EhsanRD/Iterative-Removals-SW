@@ -242,118 +242,118 @@ server <- function(input, output, session) {
         
         
     })
-    output$varREMplot<-renderPlotly({
-        
-        K=values$T-1
-        Xdes <- SWdesmat(values$T)
-        
-        varmatall <- c()
-        varmatall<- CRTVarGeneralAdj(Xdes,values$m,values$rho0,values$r,values$type)
-        varmat_excl<-matrix(data=NA, nrow=nrow(Xdes), ncol=ncol(Xdes))
-        
-        
-        IC_fun2 = function(Xdes,varmatall){
-            for(i in 1:nrow(Xdes)){
-                for (j in 1:ncol(Xdes)){
-                    if(is.na(Xdes[i,j])==TRUE | is.na(Xdes[K-i+1,values$T-j+1])==TRUE){
-                        varmat_excl[i,j] <- NA
-                        varmat_excl[K-i+1,values$T-j+1] <- NA
-                    }
-                    else if(is.na(Xdes[i,j])==FALSE & is.na(Xdes[K-i+1,values$T-j+1])==FALSE) {
-                        Xdesij <- Xdes
-                        Xdesij[i,j] <- NA
-                        Xdesij[K-i+1,values$T-j+1] <- NA
-                        varmat_excl[i,j] <- CRTVarGeneralAdj(Xdesij,values$m,values$rho0,values$r,values$type)/varmatall
-                        varmat_excl[K-i+1,values$T-j+1] <- varmat_excl[i,j]
-                    }
-                }
-            }
-            return(varmat_excl)
-        }
-        
-        mval <- list()
-        Xdlist <- list() 
-        dlist <- list() 
-        Xdlist[[1]] <- Xdes
-        dlist [[1]]<- IC_fun2(Xdlist[[1]],varmatall)
-        varmatall[1] <- varmatall 
-        
-        #remove all low-infomration content cells and updating.
-        for (i in 2:(values$T*K/2)){
-            mval[[i-1]] <- tryCatch(which(IC_fun2(Xdlist[[i-1]],varmatall[i-1])==min(IC_fun2(Xdlist[[i-1]],varmatall[i-1]),na.rm = TRUE), arr.ind = TRUE), warning=function(w) NA)
-            #Stop rule
-            if (is.na(mval[[i-1]][1])) {
-                # dlist[[i-1]]<- NULL
-                # varmatall <- varmatall[-(i-1)]
-                break
-            }    
-            Xdlist[[i]]=Xdlist[[i-1]]
-            #   if (values$cnum==0){
-            #   tryCatch(for (j in 1:dim(mval[[i-1]])[1]){
-            #       Xdlist[[i]][mval[[i-1]][[j]],mval[[i-1]][[dim(mval[[i-1]])[1]+j]]]<- NA
-            #       Xdlist[[i]][K+1-mval[[i-1]][[j]],values$T+1-mval[[i-1]][[dim(mval[[i-1]])[1]+j]]]<- NA
-            #     }, error=function(e) NA)
-            # }
-            # #remove the smallest cluster and period, and removing the corresponding pair. Only one pair is removed
-            # else if (values$cnum==1){
-            
-            mval[[i-1]] <- mval[[i-1]][order(mval[[i-1]][,1],mval[[i-1]][,2]),]
-            Xdlist[[i]][mval[[i-1]][[1]],mval[[i-1]][[dim(mval[[i-1]])[1]+1]]]<- NA
-            Xdlist[[i]][K+1-mval[[i-1]][[1]],values$T+1-mval[[i-1]][[dim(mval[[i-1]])[1]+1]]]<- NA
-            # }
-            
-            varmatall[i] <- tryCatch(CRTVarGeneralAdj(Xdlist[[i]],values$m,values$rho0,values$r,values$type),error=function(e) NA)
-            if (is.na(varmatall[i])) {
-                break
-            }
-            dlist[[i]] = IC_fun2(Xdlist[[i]],varmatall[i])
-        }
-        melted_varmatexcl<- melt(dlist)
-        melted_desmatexcl<- melt(Xdlist)
-        names(melted_desmatexcl)[names(melted_desmatexcl)=="value"] <- "Xdvalue"
-        melted_varmatexcl_t<- jointdataset <- merge(melted_varmatexcl, melted_desmatexcl, by = c('Var1','Var2','L1'))
-        melted_varmatexcl_t$value<-round(melted_varmatexcl_t$value, 4)
-        
-        
-        #color_palette <-colorRampPalette(c( "yellow", "red"))(length(table(varmat_excl)))
-        
-        pal <- colorRampPalette(brewer.pal(8, "YlOrRd"))(length(unique(melted_varmatexcl_t$value))-1)
-        
-        names(melted_varmatexcl_t)[names(melted_varmatexcl_t)=="Var1"] <- "Sequence"
-        names(melted_varmatexcl_t)[names(melted_varmatexcl_t)=="Var2"] <- "Period"
-        names(melted_varmatexcl_t)[names(melted_varmatexcl_t)=="L1"] <- "iter"
-        
-        T <- ncol(Xdes)
-        K <- nrow(Xdes)
-        
-        #outfile <- tempfile(fileext='.gif')
-        ###Need power values for removal plot####    
-        iter=1:length(varmatall)
-        df=as.data.frame(varmatall)
-        
-        pow <- function(vars, effsize, siglevel=0.05){
-            z <- qnorm(siglevel/2)
-            pow <- pnorm(z + sqrt(1/vars)*effsize)
-            return(pow)
-        }
-        
-        # Calculate power for a set of variances, a given effect size and sig level
-        powdf <- function(df, effsize, siglevel=0.05){
-            powvals <- apply(df, MARGIN=2, pow, effsize, siglevel)
-            powdf <- data.frame(iter, df$varmatall,powvals*100)
-            colnames(powdf) <- c("iter","variance","power")
-            return(powdf)
-        }
-        res <- powdf(df,values$effsize)
-        res$r <- values$r
-        
-        
-        res <- cbind(res,res$variance[1]/res$variance,(1-(res$variance[1]/res$variance))*100)
-        colnames(res) <- c("iter","variance","power","r","Rvariance","Effloss")
-        
-        
-        melted_varmatexcl_t <- merge(res, melted_varmatexcl_t, by = "iter", all = TRUE)
-        
+    # output$varREMplot<-renderPlotly({
+    #     
+    #     K=values$T-1
+    #     Xdes <- SWdesmat(values$T)
+    #     
+    #     varmatall <- c()
+    #     varmatall<- CRTVarGeneralAdj(Xdes,values$m,values$rho0,values$r,values$type)
+    #     varmat_excl<-matrix(data=NA, nrow=nrow(Xdes), ncol=ncol(Xdes))
+    #     
+    #     
+    #     IC_fun2 = function(Xdes,varmatall){
+    #         for(i in 1:nrow(Xdes)){
+    #             for (j in 1:ncol(Xdes)){
+    #                 if(is.na(Xdes[i,j])==TRUE | is.na(Xdes[K-i+1,values$T-j+1])==TRUE){
+    #                     varmat_excl[i,j] <- NA
+    #                     varmat_excl[K-i+1,values$T-j+1] <- NA
+    #                 }
+    #                 else if(is.na(Xdes[i,j])==FALSE & is.na(Xdes[K-i+1,values$T-j+1])==FALSE) {
+    #                     Xdesij <- Xdes
+    #                     Xdesij[i,j] <- NA
+    #                     Xdesij[K-i+1,values$T-j+1] <- NA
+    #                     varmat_excl[i,j] <- CRTVarGeneralAdj(Xdesij,values$m,values$rho0,values$r,values$type)/varmatall
+    #                     varmat_excl[K-i+1,values$T-j+1] <- varmat_excl[i,j]
+    #                 }
+    #             }
+    #         }
+    #         return(varmat_excl)
+    #     }
+    #     
+    #     mval <- list()
+    #     Xdlist <- list() 
+    #     dlist <- list() 
+    #     Xdlist[[1]] <- Xdes
+    #     dlist [[1]]<- IC_fun2(Xdlist[[1]],varmatall)
+    #     varmatall[1] <- varmatall 
+    #     
+    #     #remove all low-infomration content cells and updating.
+    #     for (i in 2:(values$T*K/2)){
+    #         mval[[i-1]] <- tryCatch(which(IC_fun2(Xdlist[[i-1]],varmatall[i-1])==min(IC_fun2(Xdlist[[i-1]],varmatall[i-1]),na.rm = TRUE), arr.ind = TRUE), warning=function(w) NA)
+    #         #Stop rule
+    #         if (is.na(mval[[i-1]][1])) {
+    #             # dlist[[i-1]]<- NULL
+    #             # varmatall <- varmatall[-(i-1)]
+    #             break
+    #         }    
+    #         Xdlist[[i]]=Xdlist[[i-1]]
+    #         #   if (values$cnum==0){
+    #         #   tryCatch(for (j in 1:dim(mval[[i-1]])[1]){
+    #         #       Xdlist[[i]][mval[[i-1]][[j]],mval[[i-1]][[dim(mval[[i-1]])[1]+j]]]<- NA
+    #         #       Xdlist[[i]][K+1-mval[[i-1]][[j]],values$T+1-mval[[i-1]][[dim(mval[[i-1]])[1]+j]]]<- NA
+    #         #     }, error=function(e) NA)
+    #         # }
+    #         # #remove the smallest cluster and period, and removing the corresponding pair. Only one pair is removed
+    #         # else if (values$cnum==1){
+    #         
+    #         mval[[i-1]] <- mval[[i-1]][order(mval[[i-1]][,1],mval[[i-1]][,2]),]
+    #         Xdlist[[i]][mval[[i-1]][[1]],mval[[i-1]][[dim(mval[[i-1]])[1]+1]]]<- NA
+    #         Xdlist[[i]][K+1-mval[[i-1]][[1]],values$T+1-mval[[i-1]][[dim(mval[[i-1]])[1]+1]]]<- NA
+    #         # }
+    #         
+    #         varmatall[i] <- tryCatch(CRTVarGeneralAdj(Xdlist[[i]],values$m,values$rho0,values$r,values$type),error=function(e) NA)
+    #         if (is.na(varmatall[i])) {
+    #             break
+    #         }
+    #         dlist[[i]] = IC_fun2(Xdlist[[i]],varmatall[i])
+    #     }
+    #     melted_varmatexcl<- melt(dlist)
+    #     melted_desmatexcl<- melt(Xdlist)
+    #     names(melted_desmatexcl)[names(melted_desmatexcl)=="value"] <- "Xdvalue"
+    #     melted_varmatexcl_t<- jointdataset <- merge(melted_varmatexcl, melted_desmatexcl, by = c('Var1','Var2','L1'))
+    #     melted_varmatexcl_t$value<-round(melted_varmatexcl_t$value, 4)
+    #     
+    #     
+    #     #color_palette <-colorRampPalette(c( "yellow", "red"))(length(table(varmat_excl)))
+    #     
+    #     pal <- colorRampPalette(brewer.pal(8, "YlOrRd"))(length(unique(melted_varmatexcl_t$value))-1)
+    #     
+    #     names(melted_varmatexcl_t)[names(melted_varmatexcl_t)=="Var1"] <- "Sequence"
+    #     names(melted_varmatexcl_t)[names(melted_varmatexcl_t)=="Var2"] <- "Period"
+    #     names(melted_varmatexcl_t)[names(melted_varmatexcl_t)=="L1"] <- "iter"
+    #     
+    #     T <- ncol(Xdes)
+    #     K <- nrow(Xdes)
+    #     
+    #     #outfile <- tempfile(fileext='.gif')
+    #     ###Need power values for removal plot####    
+    #     iter=1:length(varmatall)
+    #     df=as.data.frame(varmatall)
+    #     
+    #     pow <- function(vars, effsize, siglevel=0.05){
+    #         z <- qnorm(siglevel/2)
+    #         pow <- pnorm(z + sqrt(1/vars)*effsize)
+    #         return(pow)
+    #     }
+    #     
+    #     # Calculate power for a set of variances, a given effect size and sig level
+    #     powdf <- function(df, effsize, siglevel=0.05){
+    #         powvals <- apply(df, MARGIN=2, pow, effsize, siglevel)
+    #         powdf <- data.frame(iter, df$varmatall,powvals*100)
+    #         colnames(powdf) <- c("iter","variance","power")
+    #         return(powdf)
+    #     }
+    #     res <- powdf(df,values$effsize)
+    #     res$r <- values$r
+    #     
+    #     
+    #     res <- cbind(res,res$variance[1]/res$variance,(1-(res$variance[1]/res$variance))*100)
+    #     colnames(res) <- c("iter","variance","power","r","Rvariance","Effloss")
+    #     
+    #     
+    #     melted_varmatexcl_t <- merge(res, melted_varmatexcl_t, by = "iter", all = TRUE)
+    #     
     #     p<-ggplot(melted_varmatexcl_t,aes(Period,Sequence,frame=iter))+
     #         geom_tile(aes(fill=factor(value)),colour = "grey50") +
     #         scale_y_reverse(breaks=c(1:K)) +
