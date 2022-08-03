@@ -34,62 +34,62 @@ ui <- fluidPage(
     # Sidebar with a slider input for number of bins
     sidebarLayout(
         sidebarPanel(
-            sliderInput(inputId = "T", label = "Number of periods:",
-                        min = 5, max = 20, value = 5,  step = 1),
-            numericInput("m",
-                         "Number of subjects in each cluster-period, m:",
-                         min = 1,
-                         max=1000,
-                         step = 1,
-                         value = 100),
-            numericInput("rho0", "Intra-cluster correlation",
-                         min = 0,
-                         max=0.2,
-                         step = 0.001,
-                         value = 0.05),
-            radioButtons("type", label = ("Allow for decay correlation"), 
-                         choices = list("Yes" = 1, "No" = 0), selected = 1),
-            numericInput("r",
-                         "Cluster auto-correlation",
-                         min = 0,
-                         max=1,
-                         step = 0.05,
-                         value = 0.95),
-            #radioButtons("cnum", label = "Remove one pair at each step",
-            # choices = list("Yes" = 1, "No" = 0), selected = 1),
-            sliderInput("effsize", "Effect size:",
-                        min = 0.05, max = 1.0,
-                        value = 0.2, step = 0.05),
-            # clicks the button
-            actionButton("update", "Update"),
+            # sliderInput(inputId = "T", label = "Number of periods:",
+            #             min = 5, max = 20, value = 5,  step = 1),
+            # numericInput("m",
+            #              "Number of subjects in each cluster-period, m:",
+            #              min = 1,
+            #              max=1000,
+            #              step = 1,
+            #              value = 100),
+            # numericInput("rho0", "Intra-cluster correlation",
+            #              min = 0,
+            #              max=0.2,
+            #              step = 0.001,
+            #              value = 0.05),
+            # radioButtons("type", label = ("Allow for decay correlation"), 
+            #              choices = list("Yes" = 1, "No" = 0), selected = 1),
+            # numericInput("r",
+            #              "Cluster auto-correlation",
+            #              min = 0,
+            #              max=1,
+            #              step = 0.05,
+            #              value = 0.95),
+            # #radioButtons("cnum", label = "Remove one pair at each step",
+            # # choices = list("Yes" = 1, "No" = 0), selected = 1),
+            # sliderInput("effsize", "Effect size:",
+            #             min = 0.05, max = 1.0,
+            #             value = 0.2, step = 0.05),
+            # # clicks the button
+            # actionButton("update", "Update"),
         ),
         mainPanel(
-            tabsetPanel(
-                tabPanel("Information content of pairs of cluster-period cells",  
-                         plotOutput("varMainplot"),
-                         textOutput("ICpcelltext")
-                ),
-                tabPanel("The iterative removal of cluster-period cells",  
-                         uiOutput("plotheader1a"), uiOutput("plotheader1b"),
-                         plotlyOutput("varREMplot"),
-                         textOutput("ICremtext")
-                ),
-                tabPanel("Variance",
-                         uiOutput("plotheader2a"), uiOutput("plotheader2b"),
-                         plotlyOutput("Varsplot"),
-                         textOutput("ICvartext")
-                ),
-                tabPanel("Efficiency loss",
-                         uiOutput("plotheader3a"), uiOutput("plotheader3b"),
-                         plotlyOutput("Efflossplot"),
-                         textOutput("ICRvartext")
-                ),
-                tabPanel("Power",  
-                         uiOutput("plotheader4a"), uiOutput("plotheader4b"),
-                         plotlyOutput("Powplot"),
-                         textOutput("ICpowtext")
-                )     
-            )
+            # tabsetPanel(
+            #     tabPanel("Information content of pairs of cluster-period cells",  
+            #              plotOutput("varMainplot"),
+            #              textOutput("ICpcelltext")
+            #     ),
+            #     tabPanel("The iterative removal of cluster-period cells",  
+            #              uiOutput("plotheader1a"), uiOutput("plotheader1b"),
+            #              plotlyOutput("varREMplot"),
+            #              textOutput("ICremtext")
+            #     ),
+            #     tabPanel("Variance",
+            #              uiOutput("plotheader2a"), uiOutput("plotheader2b"),
+            #              plotlyOutput("Varsplot"),
+            #              textOutput("ICvartext")
+            #     ),
+            #     tabPanel("Efficiency loss",
+            #              uiOutput("plotheader3a"), uiOutput("plotheader3b"),
+            #              plotlyOutput("Efflossplot"),
+            #              textOutput("ICRvartext")
+            #     ),
+            #     tabPanel("Power",  
+            #              uiOutput("plotheader4a"), uiOutput("plotheader4b"),
+            #              plotlyOutput("Powplot"),
+            #              textOutput("ICpowtext")
+            #     )     
+           # )
         )
     )
 )
