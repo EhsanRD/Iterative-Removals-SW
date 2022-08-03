@@ -1,0 +1,21 @@
+---
+title: "Efficiency loss plots for different settings"
+author: "Ehsan Rezaei"
+date: "18/05/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_knit$set(root.dir = 'G:\\Shared drives\\Ehsan PhD work\\Codes\\Git\\Iterative-Removals-SW')
+```
+
+<br><br><br><br>
+```{r dpi=200,warning=FALSE, message=FALSE,echo=FALSE}
+effsize=0.2
+# 0 removing without any consideration, 1 removing only one pair at each step
+cnum=1
+p <- htmltools::tagList()
+source("ICcell_incomd.R", local=TRUE)
+p
+```

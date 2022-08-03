@@ -1,10 +1,9 @@
+install.packages("rsconnect")
+library("rsconnect")
+
+
 #setwd("~/Google Drive/Shared drives/Ehsan PhD work/Codes/")
 #setwd("G:\\Shared drives\\Ehsan PhD work\\Codes\\Git\\Iterative-Removals-SW")
-# install.packages('reticulate')
-# reticulate::install_miniconda()
-# reticulate::conda_install('r-reticulate', 'python-kaleido')
-# reticulate::conda_install('r-reticulate', 'plotly', channel = 'plotly')
-# reticulate::use_miniconda('r-reticulate')
 source("CRTVarAdj_func.R", local=TRUE)
 source("ICcell_appfunc.R", local=TRUE)
 # Functions for generating design matrices
@@ -25,17 +24,17 @@ SWdesmat <- function(T) {
 # Xdlist
 # dlist
 # (K+1-k,T+1-t)
-m=20
-rho0=0.01
-r=0.8
+m=90
+rho0=0.15
+r=0.95
 #lbl="Hussey and Hughes model"
 #lbl="Exponential decay model"
 #1 decay 0 HH
 type=1
-T=7
+T=5
 # 0 removing without any consideration, 1 removing only one pair at each step
 cnum=1
-effsize=0.32
+effsize=0.36
 #
 # pal <- c("#FF4500", "#00FF00", "#00BFFF")
 # pal <- setNames(pal, c("0.95", "0.8","0.5"))
@@ -68,8 +67,27 @@ plot_ly(data = res_m, x = ~na_percnt, y = ~Effloss, type="scatter",linetype=~as.
   
 }
 
+
 p=plot(res_m,m,T,rho0)
 save_image(p, file="Eff_loss_plot.png",width = 1150, height = 550)
+
+#single line
+plot = function(data, m, T,rho0) {
+  #relative variance plots accross cac
+  plot_ly(data = res_m, x = ~na_percnt, y = ~Effloss, type="scatter",name = "Effloss", mode="lines",
+          hoverinfo="text", hoverlabel=list(bordercolor=NULL, font=list(size=14)),line=list(dash ="dash",color="#FF6666", width = 6),
+          text=~paste("RPercent:", round(na_percnt,2),"%", "<br>Effloss:", round(Effloss,2),"%",
+                      "<br>Power:", round(power,2),"%")) %>%
+  layout(xaxis=list(title="Removal percentage of cluster-period cells (%)", titlefont=list(size=18), showline=TRUE,
+                                tickmode="auto", tickfont=list(size=16), nticks=11, range=c(0,100),ticks="inside",
+                              mirror=TRUE, showgrid=FALSE),
+        yaxis=list(title="Efficiency loss (%)", titlefont=list(size=18), tickfont=list(size=16),
+                   mirror=TRUE, showline=TRUE,range=c(0,100)),legend = list(title=list(text='<b> Type </b>')))# %>% 
+   # add_segments(y = 0, yend = 50, x = 50, xend = 50,line = list(dash = "dash",color="#00BFFF"), showlegend=FALSE,hoverinfo='skip')
+}
+
+p=plot(res_m,m,T,rho0)
+save_image(p, file="efflossPos.png",width = 1150, height = 550)
 
 ay <- list(
   tickfont = list(color = "#00CC00"),
@@ -83,17 +101,17 @@ plot = function(data, m, T,rho0) {
   plot_ly(data = res_m, x = ~na_percnt, y = ~Effloss, type="scatter",name = "Effloss", mode="lines",
          hoverinfo="text", hoverlabel=list(bordercolor=NULL, font=list(size=14)),line=list(dash ="dash",color="#FF6666"),
           text=~paste("RPercent:", round(na_percnt,2),"%", "<br>Effloss:", round(Effloss,2),"%",
-                      "<br>Power:", round(power,2),"%")) %>%
-  add_trace(data = res_m, x = ~na_percnt, y = ~power, type="scatter",name = "power",yaxis = "y2",mode="lines",
-            line=list(dash ="dot",color="#00CC00")) %>% 
-  layout(yaxis2 = ay,xaxis=list(title="Removal percentage of cluster-period cells (%)", titlefont=list(size=18), showline=TRUE,
-                                tickmode="auto", tickfont=list(size=16), nticks=11, range=c(0,100),ticks="inside",
-                                mirror=TRUE, showgrid=FALSE),
-         yaxis=list(title="Efficiency loss (%)", titlefont=list(size=18), tickfont=list(size=16),
-                    mirror=TRUE, showline=TRUE,range=c(0,100)),legend = list(title=list(text='<b> Type </b>')))%>% 
-    # title=list(text=paste0("\n","m=",m,","," ","T=",T,","," ","icc","=",rho0,","," ","effsize=",effsize),
-    #                      y =0.95,font=list(size = 15))) %>% 
-    add_segments(y = 0, yend = 50, x = 50, xend = 50,line = list(dash = "dash",color="#00BFFF"), showlegend=FALSE,hoverinfo='skip')  
+                      "<br>Power:", round(power,2),"%")) #%>%
+  # add_trace(data = res_m, x = ~na_percnt, y = ~power, type="scatter",name = "power",yaxis = "y2",mode="lines",
+  #           line=list(dash ="dot",color="#00CC00")) %>% 
+  # layout(yaxis2 = ay,xaxis=list(title="Removal percentage of cluster-period cells (%)", titlefont=list(size=18), showline=TRUE,
+  #                               tickmode="auto", tickfont=list(size=16), nticks=11, range=c(0,100),ticks="inside",
+  #                               mirror=TRUE, showgrid=FALSE),
+  #        yaxis=list(title="Efficiency loss (%)", titlefont=list(size=18), tickfont=list(size=16),
+  #                   mirror=TRUE, showline=TRUE,range=c(0,100)),legend = list(title=list(text='<b> Type </b>')))%>% 
+  #   # title=list(text=paste0("\n","m=",m,","," ","T=",T,","," ","icc","=",rho0,","," ","effsize=",effsize),
+  #   #                      y =0.95,font=list(size = 15))) %>% 
+  #   add_segments(y = 0, yend = 50, x = 50, xend = 50,line = list(dash = "dash",color="#00BFFF"), showlegend=FALSE,hoverinfo='skip')  
     # title=list(text=paste(if (type == 1) {paste0("plot"," ",l," ","(","Discrete time decay",")")
     # } else if (type == 0){paste0("plot"," ",l," ","(","Exchangeable",")")},
     # paste0("\n","m=",m,","," ","T=",T,","," ","icc","=",rho0,","," ","effsize=",effsize))
@@ -355,7 +373,7 @@ htmlwidgets::saveWidget(as_widget(p1), "index.html")
 ####PRESNTATION
 
 plot_list =list()
-add_name = "G:\\Shared drives\\Ehsan PhD work\\Ehsan\\Presentations\\ViCBiostat_July14\\schematic\\"
+add_name = "G:\\Shared drives\\Ehsan PhD work\\Publications\\43rd ISCB\\Figures_2\\"
  
 for (i in unique(melted_varmatexcl_t$iter)) {
   
@@ -369,7 +387,7 @@ for (i in unique(melted_varmatexcl_t$iter)) {
     theme(legend.position="none")+
     # geom_label(data = melted_varmatexcl_t,aes(label= round(value,4)),fontface = "bold",
     #          colour = "white",size = 4) +
-    geom_text(aes(label= value),color = "black",size = 4, check_overlap = T)+
+    geom_text(aes(label= Xdvalue),color = "black",size = 8, check_overlap = T)+
     #scale_fill_distiller
     scale_fill_manual(values = pal,breaks=levels(factor(melted_varmatexcl_t$value)),na.value="gray") 
   
