@@ -1,5 +1,5 @@
 #setwd("~/Google Drive/Shared drives/Ehsan PhD work/Codes")
-#setwd("G:\\Shared drives\\Ehsan PhD work\\Codes\\git\\iterative-removals-sw")
+setwd("G:\\Shared drives\\Ehsan PhD work\\Codes\\git\\iterative-removals-sw")
 source("CRTVarAdj_func.R", local=TRUE)
 
 library("shiny")
@@ -16,7 +16,7 @@ library("plotly")
 library("RColorBrewer")
 library("gganimate")
 library("gifski")
-#library("cargo")
+library("cargo")
 library("tidyr")
 library("animation")
 library("htmlwidgets")
@@ -354,100 +354,100 @@ server <- function(input, output, session) {
         
         melted_varmatexcl_t <- merge(res, melted_varmatexcl_t, by = "iter", all = TRUE)
         
-        p<-ggplot(melted_varmatexcl_t,aes(Period,Sequence,frame=iter))+
-            geom_tile(aes(fill=factor(value)),colour = "grey50") +
-            scale_y_reverse(breaks=c(1:K)) +
-            scale_x_continuous(breaks=c(1:T)) +
-            theme(panel.grid.minor = element_blank()) +
-            # geom_text(x=0.9,y=-0.4,hjust=0,aes(label=paste0("Power:",format(round(power,4)*100,2),"%")),
-            #           size=4,fontface="")+ 
-            theme(legend.position="none")+
-            geom_text(aes(label= Xdvalue),color = "black",size = 7, check_overlap = T)+
-            # color = "black",size = 4,check_overlap = TRUE, alpha=1) +
-            geom_label(data = melted_varmatexcl_t,aes(label= round(value,4),fontface = "bold"),
-                       colour = "white",size = 4) +
-            scale_fill_manual(values = pal,na.value="gray")
-        
-        p1<-ggplotly(p) %>% 
-            animation_opts(frame = 500,transition = 0,redraw = TRUE) %>%  
-            animation_slider(currentvalue = list(prefix = "Iter: ", font = list(color="darkblue"))) %>%
-            partial_bundle(local = FALSE)
-        #toWebGL()
-        
-        # New
-        #anim_save("outfile.gif", p1) # New
-        
-        
-        
-        output$Varsplot<-renderPlotly({
-            
-            #cstus=if(values$cnum==1){cstus="YES"}else{cstus="NO"}
-            p <- plot_ly(res, height=500, width=800, x=~iter, y=~variance, name="Variance", type="scatter",
-                         mode="lines", hoverinfo="text", hoverlabel=list(bordercolor=NULL, font=list(size=16)),
-                         text=~paste("Iteration:", iter, "<br>Variance:", round(variance, 3)),
-                         line=list(color="#F8766D", width=4, dash="dash"))%>%
-                layout(xaxis=list(title="Iteration", titlefont=list(size=18), showline=TRUE,
-                                  tickmode="auto", tickfont=list(size=16), nticks=6, ticks="inside",
-                                  mirror=TRUE, showgrid=FALSE),
-                       yaxis=list(title="Variance", titlefont=list(size=18), tickfont=list(size=16),
-                                  mirror=TRUE, showline=TRUE),
-                       # title=list(text=paste("m=",input$m,",","T=",input$T,",","rho0=",input$rho0,",","r=",
-                       # input$r,",","effsize=",
-                       #input$effsize,"\n","Removing one pair at each step=",cstus), y =1),
-                       legend=list(orientation="h", xanchor="center", yanchor="bottom", x=0.5, y=-0.5, font=list(size=16)),
-                       margin=list(l=100, r=40))
-            print(p)
-        })
-        
-        output$Efflossplot<-renderPlotly({
-            
-            #cstus=if(values$cnum==1){cstus="YES"}else{cstus="NO"}
-            p <- plot_ly(res, height=500, width=800, x=~iter, y=~Effloss, name="Effloss", type="scatter",
-                         mode="lines", hoverinfo="text", hoverlabel=list(bordercolor=NULL, font=list(size=16)),
-                         text=~paste("Iteration:", iter, "<br>Effloss:", format(round(Effloss,2),2),"%"),
-                         line=list(color="#F8766D", width=4, dash="dash"))%>%
-                layout(xaxis=list(title="Iteration", titlefont=list(size=18), showline=TRUE,
-                                  tickmode="auto", tickfont=list(size=16), nticks=6, ticks="inside",
-                                  mirror=TRUE, showgrid=FALSE),
-                       yaxis=list(title="Efficiency loss (%)", titlefont=list(size=18), tickfont=list(size=16),
-                                  mirror=TRUE, showline=TRUE),
-                       # title=list(text=paste("m=",input$m,",","T=",input$T,",","rho0=",input$rho0,",","r=",
-                       #input$r,",","effsize=",
-                       #                       input$effsize,"\n","Removing one pair at each step=",cstus), y =1),
-                       legend=list(orientation="h", xanchor="center", yanchor="bottom", x=0.5, y=-0.5, font=list(size=16)),
-                       margin=list(l=100, r=40))
-            print(p)
-        })
-        
-        output$Powplot<-renderPlotly({
-            #cstus=if(values$cnum==1){cstus="YES"}else{cstus="NO"}
-            p <- plot_ly(res, height=500, width=800, x=~iter, y=~power, name="Power", type="scatter",
-                         mode="lines", hoverinfo="text", hoverlabel=list(bordercolor=NULL, font=list(size=16)),
-                         text=~paste("Iteration:", iter, "<br>Power:",  format(round(power,2),2),"%"),
-                         line=list(color="#00BA38", width=4, dash="dash"))%>%
-                layout(xaxis=list(title="Iteration", titlefont=list(size=18), showline=TRUE,
-                                  tickmode="auto", tickfont=list(size=16), nticks=6, ticks="inside",
-                                  mirror=TRUE, showgrid=FALSE),
-                       yaxis=list(title="Power (%)", titlefont=list(size=18), tickfont=list(size=16),
-                                  mirror=TRUE, showline=TRUE),
-                       # title=list(text=paste("m=",input$m,",","T=",input$T,",","rho0=",input$rho0,",","r=",
-                       # input$r,",","effsize=",
-                       #                       input$effsize,"\n","Removing one pair at each step=",cstus), y = 0.15),
-                       legend=list(orientation="h", xanchor="center", yanchor="bottom", x=0.5, y=-0.5, font=list(size=16)),
-                       margin=list(l=100, r=60))
-            print(p)
-        })
-        
-        ####close animated image### 
-        # Return a list containing the filename
-        # list(src = "outfile.gif",
-        #      contentType = 'image/gif'
-        #      # width = 400,
-        #      # height = 300,
-        #      # alt = "This is alternate text"
-        # )}, deleteFile = TRUE)
-        print(p1)
-    })
+    #     p<-ggplot(melted_varmatexcl_t,aes(Period,Sequence,frame=iter))+
+    #         geom_tile(aes(fill=factor(value)),colour = "grey50") +
+    #         scale_y_reverse(breaks=c(1:K)) +
+    #         scale_x_continuous(breaks=c(1:T)) +
+    #         theme(panel.grid.minor = element_blank()) +
+    #         # geom_text(x=0.9,y=-0.4,hjust=0,aes(label=paste0("Power:",format(round(power,4)*100,2),"%")),
+    #         #           size=4,fontface="")+ 
+    #         theme(legend.position="none")+
+    #         geom_text(aes(label= Xdvalue),color = "black",size = 7, check_overlap = T)+
+    #         # color = "black",size = 4,check_overlap = TRUE, alpha=1) +
+    #         geom_label(data = melted_varmatexcl_t,aes(label= round(value,4),fontface = "bold"),
+    #                    colour = "white",size = 4) +
+    #         scale_fill_manual(values = pal,na.value="gray")
+    #     
+    #     p1<-ggplotly(p) %>% 
+    #         animation_opts(frame = 500,transition = 0,redraw = TRUE) %>%  
+    #         animation_slider(currentvalue = list(prefix = "Iter: ", font = list(color="darkblue"))) %>%
+    #         partial_bundle(local = FALSE)
+    #     #toWebGL()
+    #     
+    #     # New
+    #     #anim_save("outfile.gif", p1) # New
+    #     
+    #     
+    #     
+    #     output$Varsplot<-renderPlotly({
+    #         
+    #         #cstus=if(values$cnum==1){cstus="YES"}else{cstus="NO"}
+    #         p <- plot_ly(res, height=500, width=800, x=~iter, y=~variance, name="Variance", type="scatter",
+    #                      mode="lines", hoverinfo="text", hoverlabel=list(bordercolor=NULL, font=list(size=16)),
+    #                      text=~paste("Iteration:", iter, "<br>Variance:", round(variance, 3)),
+    #                      line=list(color="#F8766D", width=4, dash="dash"))%>%
+    #             layout(xaxis=list(title="Iteration", titlefont=list(size=18), showline=TRUE,
+    #                               tickmode="auto", tickfont=list(size=16), nticks=6, ticks="inside",
+    #                               mirror=TRUE, showgrid=FALSE),
+    #                    yaxis=list(title="Variance", titlefont=list(size=18), tickfont=list(size=16),
+    #                               mirror=TRUE, showline=TRUE),
+    #                    # title=list(text=paste("m=",input$m,",","T=",input$T,",","rho0=",input$rho0,",","r=",
+    #                    # input$r,",","effsize=",
+    #                    #input$effsize,"\n","Removing one pair at each step=",cstus), y =1),
+    #                    legend=list(orientation="h", xanchor="center", yanchor="bottom", x=0.5, y=-0.5, font=list(size=16)),
+    #                    margin=list(l=100, r=40))
+    #         print(p)
+    #     })
+    #     
+    #     output$Efflossplot<-renderPlotly({
+    #         
+    #         #cstus=if(values$cnum==1){cstus="YES"}else{cstus="NO"}
+    #         p <- plot_ly(res, height=500, width=800, x=~iter, y=~Effloss, name="Effloss", type="scatter",
+    #                      mode="lines", hoverinfo="text", hoverlabel=list(bordercolor=NULL, font=list(size=16)),
+    #                      text=~paste("Iteration:", iter, "<br>Effloss:", format(round(Effloss,2),2),"%"),
+    #                      line=list(color="#F8766D", width=4, dash="dash"))%>%
+    #             layout(xaxis=list(title="Iteration", titlefont=list(size=18), showline=TRUE,
+    #                               tickmode="auto", tickfont=list(size=16), nticks=6, ticks="inside",
+    #                               mirror=TRUE, showgrid=FALSE),
+    #                    yaxis=list(title="Efficiency loss (%)", titlefont=list(size=18), tickfont=list(size=16),
+    #                               mirror=TRUE, showline=TRUE),
+    #                    # title=list(text=paste("m=",input$m,",","T=",input$T,",","rho0=",input$rho0,",","r=",
+    #                    #input$r,",","effsize=",
+    #                    #                       input$effsize,"\n","Removing one pair at each step=",cstus), y =1),
+    #                    legend=list(orientation="h", xanchor="center", yanchor="bottom", x=0.5, y=-0.5, font=list(size=16)),
+    #                    margin=list(l=100, r=40))
+    #         print(p)
+    #     })
+    #     
+    #     output$Powplot<-renderPlotly({
+    #         #cstus=if(values$cnum==1){cstus="YES"}else{cstus="NO"}
+    #         p <- plot_ly(res, height=500, width=800, x=~iter, y=~power, name="Power", type="scatter",
+    #                      mode="lines", hoverinfo="text", hoverlabel=list(bordercolor=NULL, font=list(size=16)),
+    #                      text=~paste("Iteration:", iter, "<br>Power:",  format(round(power,2),2),"%"),
+    #                      line=list(color="#00BA38", width=4, dash="dash"))%>%
+    #             layout(xaxis=list(title="Iteration", titlefont=list(size=18), showline=TRUE,
+    #                               tickmode="auto", tickfont=list(size=16), nticks=6, ticks="inside",
+    #                               mirror=TRUE, showgrid=FALSE),
+    #                    yaxis=list(title="Power (%)", titlefont=list(size=18), tickfont=list(size=16),
+    #                               mirror=TRUE, showline=TRUE),
+    #                    # title=list(text=paste("m=",input$m,",","T=",input$T,",","rho0=",input$rho0,",","r=",
+    #                    # input$r,",","effsize=",
+    #                    #                       input$effsize,"\n","Removing one pair at each step=",cstus), y = 0.15),
+    #                    legend=list(orientation="h", xanchor="center", yanchor="bottom", x=0.5, y=-0.5, font=list(size=16)),
+    #                    margin=list(l=100, r=60))
+    #         print(p)
+    #     })
+    #     
+    #     ####close animated image### 
+    #     # Return a list containing the filename
+    #     # list(src = "outfile.gif",
+    #     #      contentType = 'image/gif'
+    #     #      # width = 400,
+    #     #      # height = 300,
+    #     #      # alt = "This is alternate text"
+    #     # )}, deleteFile = TRUE)
+    #     print(p1)
+    # })
 }
 
 # Run the application
