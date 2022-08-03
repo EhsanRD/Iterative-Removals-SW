@@ -5,9 +5,9 @@ account: ehsanrd-biostat
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 6731308
-bundleId: 6159932
+bundleId: 6159965
 url: https://ehsanrd-biostat.shinyapps.io/iterativeinfcontent/
-when: 1659491057.6423
-lastSyncTime: 1659491057.6423
+when: 1659491767.17141
+lastSyncTime: 1659491767.17141
 asMultiple: FALSE
 asStatic: FALSE
