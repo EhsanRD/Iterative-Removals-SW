@@ -1,14 +1,37 @@
 #setwd("~/Google Drive/Shared drives/Ehsan PhD work/Codes")
 setwd("G:\\Shared drives\\Ehsan PhD work\\Codes\\git\\iterative-removals-sw")
-source("ICcell_appfunc.R", local=TRUE)
 source("CRTVarAdj_func.R", local=TRUE)
+
+#library("shiny")
+library("ggplot2")
+library("reshape2")
+library("plyr")
+library("swCRTdesign")
+library("matrixcalc")
+library("scales")
+library("tidyverse")
+library("shinythemes")
+library("Matrix")
+library("plotly")
+library("RColorBrewer")
+library("gganimate")
+library("gifski")
+library("cargo")
+library("tidyr")
+library("animation")
+library("htmlwidgets")
+library("plotly")
+library("manipulateWidget")
+library("htmlwidgets")
+library("rsconnect")
+
+
 #Just for test
 # Define UI for application that draws a histogram
 ui <- fluidPage(
   # Application title
-  titlePanel(h1("Information content of cluster-period cells of SW designs",h2("New Version (Main Appraoch, Pause Button)"),h3("Source: Jessica Kasza and Kelsey Grantham GitHub"))),
+  titlePanel(h1("Information content of progressively reduced stepped wedge designs",h2(""),h3(""))),
   # Sidebar with a slider input for number of bins
-  
   sidebarLayout(
     sidebarPanel(
       sliderInput(inputId = "T", label = "Number of periods:",
@@ -32,15 +55,11 @@ ui <- fluidPage(
                    max=1,
                    step = 0.05,
                    value = 0.95),
-      radioButtons("cnum", label = "Remove one pair at each step",
-                   choices = list("Yes" = 1, "No" = 0), selected = 1),
+      #radioButtons("cnum", label = "Remove one pair at each step",
+                  # choices = list("Yes" = 1, "No" = 0), selected = 1),
       sliderInput("effsize", "Effect size:",
                   min = 0.05, max = 1.0,
                   value = 0.2, step = 0.05),
-      # sliderInput("acrate", "Control rate of animation length:",#control rate of animation length (in seconds)
-      #             min = 0.5, max = 2.0,
-      #             value = 1, step = 0.1),
-      # Update button to defer the rendering of output until user
       # clicks the button
       actionButton("update", "Update"),
     ),
@@ -60,9 +79,9 @@ ui <- fluidPage(
                  plotlyOutput("Varsplot"),
                  textOutput("ICvartext")
         ),
-        tabPanel("Relative Variance",
+        tabPanel("Efficiency loss",
                  uiOutput("plotheader3a"), uiOutput("plotheader3b"),
-                 plotlyOutput("RVarsplot"),
+                 plotlyOutput("Efflossplot"),
                  textOutput("ICRvartext")
         ),
         tabPanel("Power",  
@@ -102,8 +121,8 @@ server <- function(input, output, session) {
     rho0 = 0.05,
     r=0.95,
     type=1,
-    cnum=1,
-    effsize=0.2,
+    #cnum=1,
+    effsize=0.2
     #acrate=1
   )
   #The main thing to use actionButton
@@ -113,7 +132,7 @@ server <- function(input, output, session) {
     values$rho0 <- input$rho0
     values$r <- input$r
     values$type <- input$type
-    values$cnum <- input$cnum
+    #values$cnum <- input$cnum
     values$effsize <- input$effsize
    # values$acrate <- input$acrate
   })
@@ -269,49 +288,31 @@ server <- function(input, output, session) {
         break
       }    
       Xdlist[[i]]=Xdlist[[i-1]]
-      if (values$cnum==0){
-      tryCatch(for (j in 1:dim(mval[[i-1]])[1]){
-          Xdlist[[i]][mval[[i-1]][[j]],mval[[i-1]][[dim(mval[[i-1]])[1]+j]]]<- NA
-          Xdlist[[i]][K+1-mval[[i-1]][[j]],values$T+1-mval[[i-1]][[dim(mval[[i-1]])[1]+j]]]<- NA
-        }, error=function(e) NA)
-    }
-    #remove the smallest cluster and period, and removing the corresponding pair. Only one pair is removed
-    else if (cnum==1){
-      if (dim(mval[[i-1]])[1]==1) {
-        Xdlist[[i]][mval[[i-1]][[1]],mval[[i-1]][[dim(mval[[i-1]])[1]+1]]]<- NA
-        Xdlist[[i]][K+1-mval[[i-1]][[1]],values$T+1-mval[[i-1]][[dim(mval[[i-1]])[1]+1]]]<- NA
-      }else if (dim(mval[[i-1]])[1]==2 & (mval[[i-1]][[2]]==K+1-mval[[i-1]][[1]]) & (mval[[i-1]][[dim(mval[[i-1]])[1]+2]]==values$T+1-mval[[i-1]][[dim(mval[[i-1]])[1]+1]])){
-        Xdlist[[i]][mval[[i-1]][[1]],mval[[i-1]][[dim(mval[[i-1]])[1]+1]]]<- NA
-        Xdlist[[i]][K+1-mval[[i-1]][[1]],values$T+1-mval[[i-1]][[dim(mval[[i-1]])[1]+1]]]<- NA
-      }
-      else if (dim(mval[[i-1]])[1]>=2 & (mval[[i-1]][[2]]!=K+1-mval[[i-1]][[1]] | mval[[i-1]][[dim(mval[[i-1]])[1]+2]]!=values$T+1-mval[[i-1]][[dim(mval[[i-1]])[1]+1]])) {
+    #   if (values$cnum==0){
+    #   tryCatch(for (j in 1:dim(mval[[i-1]])[1]){
+    #       Xdlist[[i]][mval[[i-1]][[j]],mval[[i-1]][[dim(mval[[i-1]])[1]+j]]]<- NA
+    #       Xdlist[[i]][K+1-mval[[i-1]][[j]],values$T+1-mval[[i-1]][[dim(mval[[i-1]])[1]+j]]]<- NA
+    #     }, error=function(e) NA)
+    # }
+    # #remove the smallest cluster and period, and removing the corresponding pair. Only one pair is removed
+    # else if (values$cnum==1){
+     
         mval[[i-1]] <- mval[[i-1]][order(mval[[i-1]][,1],mval[[i-1]][,2]),]
         Xdlist[[i]][mval[[i-1]][[1]],mval[[i-1]][[dim(mval[[i-1]])[1]+1]]]<- NA
         Xdlist[[i]][K+1-mval[[i-1]][[1]],values$T+1-mval[[i-1]][[dim(mval[[i-1]])[1]+1]]]<- NA
-      }
-    }
       # }
-      varmatall[i] <- CRTVarGeneralAdj(Xdlist[[i]],values$m,values$rho0,values$r,values$type)
+
+      varmatall[i] <- tryCatch(CRTVarGeneralAdj(Xdlist[[i]],values$m,values$rho0,values$r,values$type),error=function(e) NA)
+      if (is.na(varmatall[i])) {
+        break
+      }
       dlist[[i]] = IC_fun2(Xdlist[[i]],varmatall[i])
     }
-    
-    # melted_varmatexcl_t <- data.frame( Var1=integer(),
-    #                                    Var2=integer(),
-    #                                    value=integer(),
-    #                                    iter=integer())
-    # for (i in 1:length(dlist)){
-    #   varmat_excl<-round(dlist[[i]], 4)
-    #   melted_varmatexcl <- melt(varmat_excl)
-    #   melted_varmatexcl$iter<- i
-    #   melted_varmatexcl_t <- rbind(melted_varmatexcl, melted_varmatexcl_t)
-    # }
-    
     melted_varmatexcl<- melt(dlist)
-    #varmat_excl$value<-round(varmat_excl$value, 4)
     melted_desmatexcl<- melt(Xdlist)
     names(melted_desmatexcl)[names(melted_desmatexcl)=="value"] <- "Xdvalue"
     melted_varmatexcl_t<- jointdataset <- merge(melted_varmatexcl, melted_desmatexcl, by = c('Var1','Var2','L1'))
-    
+    melted_varmatexcl_t$value<-round(melted_varmatexcl_t$value, 4)
     
     
     #color_palette <-colorRampPalette(c( "yellow", "red"))(length(table(varmat_excl)))
@@ -339,35 +340,37 @@ pow <- function(vars, effsize, siglevel=0.05){
 # Calculate power for a set of variances, a given effect size and sig level
 powdf <- function(df, effsize, siglevel=0.05){
   powvals <- apply(df, MARGIN=2, pow, effsize, siglevel)
-  powdf <- data.frame(iter, df$varmatall,powvals)
+  powdf <- data.frame(iter, df$varmatall,powvals*100)
   colnames(powdf) <- c("iter","variance","power")
   return(powdf)
 }
 res <- powdf(df,values$effsize)
+res$r <- values$r
 
-res <- cbind(res,res$variance/res$variance[1])
-colnames(res) <- c("iter","variance","power","Rvariance") 
+
+res <- cbind(res,res$variance[1]/res$variance,(1-(res$variance[1]/res$variance))*100)
+colnames(res) <- c("iter","variance","power","r","Rvariance","Effloss")
+
 
 melted_varmatexcl_t <- merge(res, melted_varmatexcl_t, by = "iter", all = TRUE)
     
-    p<-ggplot(melted_varmatexcl_t,aes(x=Period, y=Sequence,fill=factor(value),frame=iter))+
-      geom_tile(colour = "grey50") +
+    p<-ggplot(melted_varmatexcl_t,aes(Period,Sequence,frame=iter))+
+      geom_tile(aes(fill=factor(value)),colour = "grey50") +
       scale_y_reverse(breaks=c(1:K)) +
       scale_x_continuous(breaks=c(1:T)) +
       theme(panel.grid.minor = element_blank()) +
-      geom_text(x=0.9,y=-0.4,hjust=0,aes(label=paste0("Power:",format(round(power,4)*100,2),"%")),
-                size=4,fontface="")+ 
+      # geom_text(x=0.9,y=-0.4,hjust=0,aes(label=paste0("Power:",format(round(power,4)*100,2),"%")),
+      #           size=4,fontface="")+ 
       theme(legend.position="none")+
-      # geom_text(data = melted_varmatexcl_t,aes(Period, Sequence,label= value),
+      geom_text(aes(label= Xdvalue),color = "black",size = 7, check_overlap = T)+
       # color = "black",size = 4,check_overlap = TRUE, alpha=1) +
       geom_label(data = melted_varmatexcl_t,aes(label= round(value,4),fontface = "bold"),
                colour = "white",size = 4) +
-      scale_fill_manual(values = pal, breaks=levels(melted_varmatexcl_t$value)[seq(90, 150, by=5)],
-                        na.value="gray")
+      scale_fill_manual(values = pal,na.value="gray")
       
     p1<-ggplotly(p) %>% 
       animation_opts(frame = 500,transition = 0,redraw = TRUE) %>%  
-      animation_slider(currentvalue = list(prefix = "Iter: ", font = list(color="orange"))) %>%
+      animation_slider(currentvalue = list(prefix = "Iter: ", font = list(color="darkblue"))) %>%
       partial_bundle(local = FALSE)
     #toWebGL()
   
@@ -396,17 +399,17 @@ melted_varmatexcl_t <- merge(res, melted_varmatexcl_t, by = "iter", all = TRUE)
            print(p)
     })
     
-    output$RVarsplot<-renderPlotly({
+    output$Efflossplot<-renderPlotly({
       
       #cstus=if(values$cnum==1){cstus="YES"}else{cstus="NO"}
-      p <- plot_ly(res, height=500, width=800, x=~iter, y=~Rvariance, name="RVariance", type="scatter",
+      p <- plot_ly(res, height=500, width=800, x=~iter, y=~Effloss, name="Effloss", type="scatter",
            mode="lines", hoverinfo="text", hoverlabel=list(bordercolor=NULL, font=list(size=16)),
-           text=~paste("Iteration:", iter, "<br>RVariance:", round(Rvariance, 3)),
+           text=~paste("Iteration:", iter, "<br>Effloss:", format(round(Effloss,2),2),"%"),
            line=list(color="#F8766D", width=4, dash="dash"))%>%
            layout(xaxis=list(title="Iteration", titlefont=list(size=18), showline=TRUE,
            tickmode="auto", tickfont=list(size=16), nticks=6, ticks="inside",
            mirror=TRUE, showgrid=FALSE),
-           yaxis=list(title="Relative Variance", titlefont=list(size=18), tickfont=list(size=16),
+           yaxis=list(title="Efficiency loss (%)", titlefont=list(size=18), tickfont=list(size=16),
            mirror=TRUE, showline=TRUE),
            # title=list(text=paste("m=",input$m,",","T=",input$T,",","rho0=",input$rho0,",","r=",
            #input$r,",","effsize=",
@@ -420,12 +423,12 @@ melted_varmatexcl_t <- merge(res, melted_varmatexcl_t, by = "iter", all = TRUE)
       #cstus=if(values$cnum==1){cstus="YES"}else{cstus="NO"}
       p <- plot_ly(res, height=500, width=800, x=~iter, y=~power, name="Power", type="scatter",
            mode="lines", hoverinfo="text", hoverlabel=list(bordercolor=NULL, font=list(size=16)),
-           text=~paste("Iteration:", iter, "<br>Power:", round(power, 3)),
+           text=~paste("Iteration:", iter, "<br>Power:",  format(round(power,2),2),"%"),
            line=list(color="#00BA38", width=4, dash="dash"))%>%
            layout(xaxis=list(title="Iteration", titlefont=list(size=18), showline=TRUE,
            tickmode="auto", tickfont=list(size=16), nticks=6, ticks="inside",
            mirror=TRUE, showgrid=FALSE),
-           yaxis=list(title="Power", titlefont=list(size=18), tickfont=list(size=16),
+           yaxis=list(title="Power (%)", titlefont=list(size=18), tickfont=list(size=16),
            mirror=TRUE, showline=TRUE),
            # title=list(text=paste("m=",input$m,",","T=",input$T,",","rho0=",input$rho0,",","r=",
            # input$r,",","effsize=",
