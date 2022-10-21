@@ -15,31 +15,31 @@ CRTVarGeneralAdj <- function(Xmat, m, rho0, r, type) {
   sig2 <- sig2E/m
   M1=Xmat[,colSums(!is.na(Xmat)) > 0]
   
-if (identical(M1,Xmat)==TRUE){
-    
-    T <- ncol(Xmat)
-    K <- nrow(Xmat)
-    
-    Xvec <- as.vector(t(Xmat))
-    stackI <- matrix(rep(diag(1,T)), nrow=K*T, ncol=T, byrow=TRUE)
-    Zmat <- cbind(stackI[!is.na(Xvec),], Xvec[!is.na(Xvec)])
-    
-    #Variance matrix for one cluster, with decay in correlation over time
-    #Vi <- diag(sig2,T) + matrix(sig2CP,nrow=T, ncol=T)
-    #Constant decay var if type==0
-    if(type==0) {
-      Vi <-diag(sig2 +(1-r)*sig2CP, T) + matrix(data=sig2CP*r, nrow=T, ncol=T)
-    }
-    #exponential decay structure
-    if(type==1) {
-      Vi <- diag(sig2,T) + sig2CP*(r^abs(matrix(1:T,nrow=T, ncol=T, byrow=FALSE) - matrix(1:T,nrow=T, ncol=T, byrow=TRUE)))
-    }
-}  
-  #Need to create the Vi for the *original* design matrix
-  #and then chop out the relevant row and column
-  #T+length(t) is to allow for this.
-  
-    else {
+# if (identical(M1,Xmat)==TRUE){
+#     
+#     T <- ncol(Xmat)
+#     K <- nrow(Xmat)
+#     
+#     Xvec <- as.vector(t(Xmat))
+#     stackI <- matrix(rep(diag(1,T)), nrow=K*T, ncol=T, byrow=TRUE)
+#     Zmat <- cbind(stackI[!is.na(Xvec),], Xvec[!is.na(Xvec)])
+#     
+#     #Variance matrix for one cluster, with decay in correlation over time
+#     #Vi <- diag(sig2,T) + matrix(sig2CP,nrow=T, ncol=T)
+#     #Constant decay var if type==0
+#     if(type==0) {
+#       Vi <-diag(sig2 +(1-r)*sig2CP, T) + matrix(data=sig2CP*r, nrow=T, ncol=T)
+#     }
+#     #exponential decay structure
+#     if(type==1) {
+#       Vi <- diag(sig2,T) + sig2CP*(r^abs(matrix(1:T,nrow=T, ncol=T, byrow=FALSE) - matrix(1:T,nrow=T, ncol=T, byrow=TRUE)))
+#     }
+# }  
+#   #Need to create the Vi for the *original* design matrix
+#   #and then chop out the relevant row and column
+#   #T+length(t) is to allow for this.
+#   
+#     else {
 
     T <- ncol(M1)
     K <- nrow(Xmat)
@@ -64,8 +64,10 @@ if (identical(M1,Xmat)==TRUE){
     }
     #Variance matrix for all clusters
     #Vi <- Vi[-c(t[1:(length(t))]), -c(t[1:(length(t))])]
+    if (identical(M1,Xmat)==FALSE){
     Vi <- Vi[-tp,-tp]
-}
+    }
+#}
 
   #Variance matrix for all clusters
   Vall <- kronecker(diag(1,K), Vi)
