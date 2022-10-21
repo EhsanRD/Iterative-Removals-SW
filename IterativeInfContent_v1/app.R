@@ -6,7 +6,7 @@ source("CRTVarAdj_func.R", local=TRUE)
 # Define UI for application that draws a histogram
 ui <- fluidPage(
   # Application title
-  titlePanel(h1("Information content of progressively reduced stepped wedge designs",h2("Without Play Button"),h3(""))),
+  titlePanel(h1("Information content of progressively reduced stepped wedge designs",h2("Showing Information Contents"),h3(""))),
   # Sidebar with a slider input for number of bins
   
   sidebarLayout(
@@ -21,7 +21,7 @@ ui <- fluidPage(
                    value = 100),
       numericInput("rho0", "Intra-cluster correlation",
                    min = 0,
-                   max=0.2,
+                   max=1,
                    step = 0.001,
                    value = 0.05),
       radioButtons("type", label = ("Allow for decay correlation"), 
