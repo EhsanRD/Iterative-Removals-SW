@@ -1,6 +1,7 @@
 #setwd("~/Google Drive/Shared drives/Ehsan PhD work/Codes")
 #setwd("G:\\Shared drives\\Ehsan PhD work\\Codes\\git\\iterative-removals-sw")
 source("CRTVarAdj_func.R", local=TRUE)
+source("IterRemoval_func.R", local=TRUE)
 
 library("shiny")
 library("ggplot2")
@@ -34,7 +35,7 @@ ui <- fluidPage(
     # Sidebar with a slider input for number of bins
     sidebarLayout(
         sidebarPanel(
-            sliderInput(inputId = "T", label = "Number of periods:",
+            sliderInput(inputId = "Tp", label = "Number of periods:",
                         min = 5, max = 20, value = 5,  step = 1),
             numericInput("m",
                          "Number of subjects in each cluster-period, m:",
@@ -120,18 +121,18 @@ server <- function(input, output, session) {
     })
     #plot shows up on start-up and doesn't need the actionButton initially    
     values <- reactiveValues(
-        T = 5,
+        Tp = 5,
         m = 100,
         rho0 = 0.05,
         r=0.95,
         type=1,
-        #cnum=1,
+        cpnum=1,
         effsize=0.2
         #acrate=1
     )
     #The main thing to use actionButton
     observeEvent(input$update, {
-        values$T <- input$T
+        values$Tp <- input$Tp
         values$m <- input$m
         values$rho0 <- input$rho0
         values$r <- input$r
@@ -247,74 +248,21 @@ server <- function(input, output, session) {
     #     
     # })
     output$varREMplot<-renderPlotly({
-
-        K=values$T-1
-        Xdes <- SWdesmat(values$T)
-
-        varmatall <- c()
-        varmatall<- CRTVarGeneralAdj(Xdes,values$m,values$rho0,values$r,values$type)
-        varmat_excl<-matrix(data=NA, nrow=nrow(Xdes), ncol=ncol(Xdes))
-
-
-        IC_fun2 = function(Xdes,varmatall){
-            for(i in 1:nrow(Xdes)){
-                for (j in 1:ncol(Xdes)){
-                    if(is.na(Xdes[i,j])==TRUE | is.na(Xdes[K-i+1,values$T-j+1])==TRUE){
-                        varmat_excl[i,j] <- NA
-                        varmat_excl[K-i+1,values$T-j+1] <- NA
-                    }
-                    else if(is.na(Xdes[i,j])==FALSE & is.na(Xdes[K-i+1,values$T-j+1])==FALSE) {
-                        Xdesij <- Xdes
-                        Xdesij[i,j] <- NA
-                        Xdesij[K-i+1,values$T-j+1] <- NA
-                        varmat_excl[i,j] <- CRTVarGeneralAdj(Xdesij,values$m,values$rho0,values$r,values$type)/varmatall
-                        varmat_excl[K-i+1,values$T-j+1] <- varmat_excl[i,j]
-                    }
-                }
-            }
-            return(varmat_excl)
-        }
-
-        mval <- list()
-        Xdlist <- list()
-        dlist <- list()
-        Xdlist[[1]] <- Xdes
-        dlist [[1]]<- IC_fun2(Xdlist[[1]],varmatall)
-        varmatall[1] <- varmatall
-
-        #remove all low-infomration content cells and updating.
-        for (i in 2:(values$T*K/2)){
-            mval[[i-1]] <- tryCatch(which(IC_fun2(Xdlist[[i-1]],varmatall[i-1])==min(IC_fun2(Xdlist[[i-1]],varmatall[i-1]),na.rm = TRUE), arr.ind = TRUE), warning=function(w) NA)
-            #Stop rule
-            if (is.na(mval[[i-1]][1])) {
-                # dlist[[i-1]]<- NULL
-                # varmatall <- varmatall[-(i-1)]
-                break
-            }
-            Xdlist[[i]]=Xdlist[[i-1]]
-            #   if (values$cnum==0){
-
-            #   tryCatch(for (j in 1:dim(mval[[i-1]])[1]){
-            #       Xdlist[[i]][mval[[i-1]][[j]],mval[[i-1]][[dim(mval[[i-1]])[1]+j]]]<- NA
-            #       Xdlist[[i]][K+1-mval[[i-1]][[j]],values$T+1-mval[[i-1]][[dim(mval[[i-1]])[1]+j]]]<- NA
-            #     }, error=function(e) NA)
-            # }
-            # #remove the smallest cluster and period, and removing the corresponding pair. Only one pair is removed
-            # else if (values$cnum==1){
-
-            mval[[i-1]] <- mval[[i-1]][order(mval[[i-1]][,1],mval[[i-1]][,2]),]
-            Xdlist[[i]][mval[[i-1]][[1]],mval[[i-1]][[dim(mval[[i-1]])[1]+1]]]<- NA
-            Xdlist[[i]][K+1-mval[[i-1]][[1]],values$T+1-mval[[i-1]][[dim(mval[[i-1]])[1]+1]]]<- NA
-            # }
-
-            varmatall[i] <- tryCatch(CRTVarGeneralAdj(Xdlist[[i]],values$m,values$rho0,values$r,values$type),error=function(e) NA)
-            if (is.na(varmatall[i])) {
-                break
-            }
-            dlist[[i]] = IC_fun2(Xdlist[[i]],varmatall[i])
-        }
-        melted_varmatexcl<- melt(dlist)
-        melted_desmatexcl<- melt(Xdlist)
+        
+        Tp=values$Tp
+        K=values$Tp-1
+        m=values$m
+        rho0=values$rho0
+        r=values$r
+        type=values$type
+        cpnum=values$cpnum
+        
+        K=values$Tp-1
+        
+        #Put parameters here
+        melted_varmatexcl<- melt(IterRemoval(Tp,m, rho0, r, type,cpnum)[[1]])
+        melted_desmatexcl<- melt(IterRemoval(Tp,m, rho0, r, type,cpnum)[[2]])
+        
         names(melted_desmatexcl)[names(melted_desmatexcl)=="value"] <- "Xdvalue"
         melted_varmatexcl_t<- jointdataset <- merge(melted_varmatexcl, melted_desmatexcl, by = c('Var1','Var2','L1'))
         melted_varmatexcl_t$value<-round(melted_varmatexcl_t$value, 4)
@@ -328,7 +276,10 @@ server <- function(input, output, session) {
         names(melted_varmatexcl_t)[names(melted_varmatexcl_t)=="Var2"] <- "Period"
         names(melted_varmatexcl_t)[names(melted_varmatexcl_t)=="L1"] <- "iter"
 
-        T <- ncol(Xdes)
+        Xdes <- SWdesmat(Tp)
+        varmatall<- IterRemoval(Tp,m, rho0, r, type,cpnum)[[3]]
+        
+        Tp <- ncol(Xdes)
         K <- nrow(Xdes)
 
         #outfile <- tempfile(fileext='.gif')
@@ -350,7 +301,7 @@ server <- function(input, output, session) {
             return(powdf)
         }
         res <- powdf(df,values$effsize)
-        res$r <- values$r
+        res$r <- r
 
 
         res <- cbind(res,res$variance[1]/res$variance,(1-(res$variance[1]/res$variance))*100)
