@@ -328,16 +328,16 @@ server <- function(input, output, session) {
 #             animation_opts(frame = 500,transition = 0,redraw = TRUE) %>%
 #             animation_slider(currentvalue = list(prefix = "Iter: ", font = list(color="darkblue"))) %>%
 #             partial_bundle(local = FALSE)
-        
-        p1<-plot_ly(melted_varmatexcl_t, x = ~factor(Period),y = ~factor(Sequence), frame = ~iter,
+
+        p1<-plot_ly(melted_varmatexcl_t, x = ~as.numeric(Period),y = ~as.factor(Sequence), frame = ~iter,
              z=~value,type = 'heatmap',colors = pal,
              hoverinfo="text", hoverlabel=list(bordercolor=NULL, font=list(size=14)),
              hovertext=~paste("Xdvalue:",Xdvalue,"<br>InfCont:",value)) %>%
-        layout(xaxis=list(title="Period", titlefont=list(size=18), showline=FALSE,
+        layout(xaxis=list(title="Period", titlefont=list(size=18), showline=TRUE,
                           tickmode="auto", tickfont=list(size=16), nticks=6, ticks="inside",
-                          mirror=TRUE, showgrid=FALSE),
+                          mirror=TRUE),
                yaxis=list(title="Sequence", titlefont=list(size=18), tickfont=list(size=16), autorange="reversed",
-                          mirror=TRUE, showline=FALSE))
+                          mirror=TRUE, showline=TRUE)) 
         #anim_save("outfile.gif", p1) # New
 
 
