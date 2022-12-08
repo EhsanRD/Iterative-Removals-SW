@@ -21,9 +21,12 @@ library("htmlwidgets")
 library("plotly")
 library("rsconnect")
 require("gridExtra")
+# rsconnect::setAccountInfo(name='monash-biostat',
+#                           token='1E4470DC8A75FC394B1E78FDC4CA097F',
+#                           secret='Oggb3DJJ8n/QSMtxn31ULbMqNX67wClkrUyiL6jV')
 
 #setwd("~/Google Drive/Shared drives/Ehsan PhD work/Codes/")
-setwd("G:\\Shared drives\\Ehsan PhD work\\Codes\\Git\\Iterative-Removals-SW\\IterativeInfContent")
+#setwd("G:\\Shared drives\\Ehsan PhD work\\Codes\\Git\\Iterative-Removals-SW\\IterativeInfContent")
 source("CRTVarAdj_func.R", local=TRUE)
 source("IterRemoval_func.R", local=TRUE)
 #source("ICcell_appfunc.R", local=TRUE)
@@ -47,8 +50,8 @@ SWdesmat <- function(Tp) {
 # dlist
 # (K+1-k,T+1-t)
 m=50
-rho0=.01
-r=0.8
+rho0=0.05
+r=0.95
 # #lbl="Hussey and Hughes model"
 # #lbl="Exponential decay model"
 # #1 decay 0 HH
@@ -56,7 +59,7 @@ type=1
 Tp=5
 # # 0 removing without any consideration, 1 removing only one pair at each step
 cpnum=1
-effsize=0.20
+effsize=0.2
 
 #m <- res_m[which(res_m$na_percnt)==median(res_m$na_percnt), ]
 #I couldn't understand why I used this line below in the next graph, I need to check it later
@@ -93,23 +96,24 @@ effsize=0.20
 # save_image(p, file="Eff_loss_plot.png",width = 1150, height = 550)
 
 #single line efficiency loss or power
-# plot = function(data, m, T,rho0) {
+# plot = function(data, m, Tp,rho0) {
 # 
-#   plot_ly(data = res_m, x = ~na_percnt, y = ~power, type="scatter",name = "power", mode="lines",
-#           hoverinfo="text", hoverlabel=list(bordercolor=NULL, font=list(size=14)),line=list(dash ="dash",color="#00CC00", width = 6),
-#           text=~paste("RPercent:", round(na_percnt,2),"%", "<br>Effloss:", round(Effloss,2),"%",
+# plot_ly(data = res_m, x = ~na_percnt, y = ~Effloss, type="scatter",name = "Effloss", mode="lines",
+#           hoverinfo="text", hoverlabel=list(bordercolor=NULL, font=list(size=14)),line=list(dash ="dash",color="#FF6666", width = 6),
+#           text=~paste("RPercent:", round(na_percnt,2),"%", "<br>Effloss:", round(Effloss,2),"%",#color="#00CC00"
 #                       "<br>Power:", round(power,2),"%")) %>%
 #   layout(xaxis=list(title="Removal percentage of cluster-period cells (%)", titlefont=list(size=22,face="bold"), showline=TRUE,
 #                                 tickmode="auto", tickfont=list(size=16), nticks=11, range=c(0,100),ticks="inside",
 #                               mirror=TRUE, showgrid=FALSE),
-#         yaxis=list(title="Power (%)", titlefont=list(size=20,face="bold"), tickfont=list(size=16),
+#         yaxis=list(title="Efficiency loss (%)", titlefont=list(size=20,face="bold"), tickfont=list(size=16),
 #                    mirror=TRUE, showline=TRUE,range=c(0,100)),legend = list(title=list(text='<b> Type </b>')))%>%
-#    add_segments(y = 0, yend = 50, x = 50, xend = 50,line = list(dash = "dash",color="#00BFFF"), showlegend=FALSE,hoverinfo='skip')
+#    add_segments(y = 0, yend = 12.31, x = 50, xend = 50,line = list(color="black", width = 4, dash = 'dot'), showlegend=FALSE,hoverinfo='skip')
 # }
 # 
-# p=plot(res_m,m,T,rho0)
-# #save_image(p, file="efflossPos.png",width = 1150, height = 550)
-# save_image(p, file="pwr.png",width = 1150, height = 550)
+# p=plot(res_m,m,Tp,rho0)
+# 
+# save_image(p, file="efflossPos.png",width = 1150, height = 550)
+#save_image(p, file="pwr.png",width = 1150, height = 550)
 # 
 # ay <- list(
 #   tickfont = list(color = "#00CC00"),
@@ -145,12 +149,10 @@ effsize=0.20
 # 
 # ###Paper, Fig5 & with some modification Fig 7
 # ####two separate icc (0.15, 0.14) to do this generate two datasets
-
 # add_name = "G:\\Shared drives\\Ehsan PhD work\\Paper_1\\plots\\Fig 7"
 # 
-# 
-# #efficiency loss and power in one figure (Fig 5)
-# fig1<- plot_ly(data = res_m, x = ~na_percnt, y = ~Effloss, type="scatter",name = "Discrete-time Decay", mode="lines",
+# # #efficiency loss and power in one figure (Fig 5)
+# fig1<-plot_ly(data = res_m, x = ~na_percnt, y = ~Effloss, type="scatter",name = "Discrete-time Decay", mode="lines",
 #         hoverinfo="text", hoverlabel=list(bordercolor=NULL, font=list(size=14)),line=list(dash ="dot",color="#8b0000"),
 #         #,line=list(dash = "dash",color="#FF4500")#013220 darkgreen
 #         text=~paste("RPercent:", round(na_percnt,2),"%", "<br>Effloss:", round(Effloss,2),"%",
@@ -162,14 +164,15 @@ effsize=0.20
 #                     mirror=TRUE, showline=TRUE,range=c(0,100)),legend = list(title=list(text='<b>Type</b>')))%>%
 #   # title=list(text=paste0("\n","m=",m,","," ","T=",T,","," ","icc","=",rho0,","," ","effsize=",effsize),
 #   #                      y =0.95,font=list(size = 15))) %>%
-# add_segments(y = 100, yend = 100, x = 0, xend = 100,line = list(dash = "solid",color="black"), showlegend=FALSE,hoverinfo='skip')%>%
+# add_segments(y = 100, yend = 100, x = 0, xend = 100,line = list(dash = "solid",color="black"), showlegend=FALSE,hoverinfo='skip')#%>%
 # # title=list(text=paste(if (type == 1) {paste0("plot"," ",l," ","(","Discrete time decay",")")
 # # } else if (type == 0){paste0("plot"," ",l," ","(","Exchangeable",")")},
 # # paste0("\n","m=",m,","," ","T=",T,","," ","icc","=",rho0,","," ","effsize=",effsize))
 # #                      ,y =0.95,font=list(size = 15)))
-#  add_trace(data = res_m1, x = ~na_percnt, y = ~Effloss, type="scatter",name = "Exchangeable",mode="lines",
-#            line=list(dash ="solid",color="#8b0000"))
-# #save_image(p1, file="effloss_paper1_fig6.png",width = 1150, height = 550)
+# ##for two signle plots
+#    # add_trace(data = res_m1, x = ~na_percnt, y = ~Effloss, type="scatter",name = "Exchangeable",mode="lines",
+#    #         line=list(dash ="solid",color="#8b0000"))
+# #save_image(p1, file="effloss_paper1_fig5.png",width = 1150, height = 550)
 # 
 # fig2<-plot_ly(data = res_m, x = ~na_percnt, y = ~power, type="scatter",name = "Discrete-time Decay", mode="lines",
 #           hoverinfo="text", hoverlabel=list(bordercolor=NULL, font=list(size=14)),line=list(dash ="dot",color="#8b0000"),
@@ -180,15 +183,18 @@ effsize=0.20
 #                       tickmode="auto", tickfont=list(size=16), nticks=11, range=c(0,100),ticks="inside",
 #                       mirror=TRUE, showgrid=FALSE),
 #            yaxis=list(title="Power (%)", titlefont=list(size=18), tickfont=list(size=16),
-#                       mirror=TRUE, showline=TRUE,range=c(0,100)),legend = list(title=list(text='<b>Type</b>'))) %>%
-#     add_trace(data = res_m1, x = ~na_percnt, y = ~power, type="scatter",name = "Exchangeable",mode="lines",
-#               line=list(dash ="solid",color="#8b0000"),showlegend=F)
+#                       mirror=TRUE, showline=TRUE,range=c(0,100)),legend = list(title=list(text='<b>Type</b>'))) #%>%
+#   ##for two signle plots 
+#    # add_trace(data = res_m1, x = ~na_percnt, y = ~power, type="scatter",name = "Exchangeable",mode="lines",
+#    #            line=list(dash ="solid",color="#8b0000"),showlegend=F)
 # 
 # fig <- subplot(fig1, fig2, shareX=TRUE, titleY = TRUE,nrows=2) %>%
 #   layout(title = '',showlegend = TRUE)
 # 
-# save_image(fig, file="efflossPow_paper1_fig5.png",width = 1150, height = 550)
-
+# #save_image(fig, file="G:\\Shared drives\\Ehsan PhD work\\Paper_1\\plots\\Fig 5\\efflossPow_paper1_fig5.png",width = 1150, height = 550)
+# save_image(fig, file="G:\\Shared drives\\Ehsan PhD work\\Paper_1\\plots\\Fig 7\\efflossPow_paper1_fig7.png",width = 1150, height = 550)
+# 
+# 
 
 
 l=0
@@ -206,7 +212,7 @@ res_selct <- data.frame(iter=integer(),
                     na_percnt=integer(),m=integer(),p=integer(),rho0=integer())
 p <-list ()
 for (m in c(10,100)){
-  for (T in c(5,10)){
+  for (Tp in c(5,10)){
     for (rho0 in c(0.01,0.05,0.15)){
 
       l=l+1
@@ -283,8 +289,8 @@ res_sb <- data.frame(iter=integer(),
         colnames(res) <- c("iter","variance","power","r","Rvariance","Effloss")
         
         #count NA Xdvalue
-        #res_na <- melted_varmatexcl_t %>% group_by(iter) %>% summarise(na_percnt = (sum(is.na(value))/(T*K))*100)
-        res_na <- melted_varmatexcl_t %>% group_by(iter) %>% summarise(na_percnt = (sum(is.na(Xdvalue))/(T*K))*100)
+        #res_na <- melted_varmatexcl_t %>% group_by(iter) %>% summarise(na_percnt = (sum(is.na(value))/(Tp*K))*100)
+        res_na <- melted_varmatexcl_t %>% group_by(iter) %>% summarise(na_percnt = (sum(is.na(Xdvalue))/(Tp*K))*100)
         res_2 <- merge(res, res_na,by = c('iter'))
         
         res_2$m <- m
@@ -344,15 +350,14 @@ res_sb <- data.frame(iter=integer(),
 #  
 # ####PRESNTATION
 # ####PAPER1
-#plot_list =list()
-# ####PRESNTATION
+# plot_list =list()
+# ####PRESENTATION
 # #add_name = "G:\\Shared drives\\Ehsan PhD work\\Publications\\43rd ISCB\\Figures_2\\"
-# ####PAPER1
-#add_name = "G:\\Shared drives\\Ehsan PhD work\\Paper_1\\plots\\Fig 3\\"
-###Confirmation report
-#melted_varmatexcl_t <- merge(res, melted_varmatexcl_t, by = "iter", all = TRUE)
-# add_name = "G:\\Shared drives\\Ehsan PhD work\\confirmation\\Fig 2"
-# png(paste0(add_name,"_t",".png"), width = 2000, height = 1000)
+# ####PAPER1 (figure 3, figure 4)
+# add_name = "G:\\Shared drives\\Ehsan PhD work\\Paper_1\\plots\\Fig 4\\"
+# ##Confirmation report
+# melted_varmatexcl_t <- merge(res, melted_varmatexcl_t, by = "iter", all = TRUE)
+# #add_name = "G:\\Shared drives\\Ehsan PhD work\\confirmation\\Figure 4"
 # titl=c("(a)","(b)","(c)","(d)","(e)","(f)","(g)","(h)","(l)")
 # 
 # for (i in unique(melted_varmatexcl_t$iter) ) {
@@ -361,11 +366,11 @@ res_sb <- data.frame(iter=integer(),
 # 
 #     p<-ggplot(subset(melted_varmatexcl_t,iter==i),aes(Period,Sequence))+
 #     geom_tile(aes(fill=factor(value)),colour = "grey50") +
-#     geom_text(x=0.5,y=-0.35,hjust=0,aes(label=paste0("Power:",format(round(power[[1]],2),2),"%")),
-#               size=4)+
+#     # geom_text(x=0.5,y=-0.35,hjust=0,aes(label=paste0("Power:",format(round(power[[1]],2),2),"%")),
+#     #           size=4)+
 #     scale_y_reverse(breaks=c(1:K)) +
-#     scale_x_continuous(breaks=c(1:T)) +
-#       labs(title = titl[[i]],caption =  paste("iteration:",i))+
+#     scale_x_continuous(breaks=c(1:Tp)) +
+#       labs(title = titl[[i]])+#,caption =  paste("iteration:",i))+
 #       theme(plot.title = element_text(hjust = 0,face="bold", colour="Black", size = 18),
 #             plot.caption = element_text(size = 14,face = "bold",hjust = 1),
 #             axis.title.x = element_text(face="bold", colour="Black", size = 18),
@@ -383,24 +388,25 @@ res_sb <- data.frame(iter=integer(),
 #     scale_fill_manual(values = pal,breaks=levels(factor(melted_varmatexcl_t$value)),na.value="gray")
 # 
 #     plot_list[[i]] = p
-#     print(plot_list[[i]])
-#     dev.off()
+#     #print(plot_list[[i]])
+#     #dev.off()
 # }
-# # 
-# # 
+# #
+# #
+# png(paste0(add_name,"Figure 4",".png"), width = 2000, height = 1000)
 # grid.arrange(plot_list[[1]], plot_list[[2]] , plot_list[[3]], plot_list[[4]],
 #              plot_list[[5]], plot_list[[6]] , plot_list[[7]], plot_list[[8]], ncol=4)
+# 
+# dev.off()
 
-
-
-####PAPER1
+ ####PAPER1
 # plot_list =list()
-# # # Fig6 & Appendix B 
-# add_name = "G:\\Shared drives\\Ehsan PhD work\\Paper_1\\plots\\Fig 7\\"
+# # # Fig6 & Appendix B
+# add_name = "G:\\Shared drives\\Ehsan PhD work\\Paper_1\\plots\\Fig 6\\"
 # # CONFIRMATION SEMINAR
 # #add_name = "G:\\Shared drives\\Ehsan PhD work\\Confirmation\\materials\\ex3\\"
 # 
-# #png(paste0(add_name,"_t7",".png"), width = 1000, height = 750)
+# png(paste0(add_name,"Figure 6",".png"), width = 1000, height = 750)
 # titl1=paste("(",letters, ")",sep="")
 # titl2=paste("(","a",letters, ")",sep="")
 # titl=c(titl1,titl2)
@@ -412,8 +418,8 @@ res_sb <- data.frame(iter=integer(),
 #   p<-ggplot(subset(melted_varmatexcl_t,iter==i),aes(Period,Sequence))+
 #     geom_tile(aes(fill=factor(value)),colour = "grey50") +
 #     scale_y_reverse(breaks=c(1:K)) +
-#     scale_x_continuous(breaks=c(1:T)) +
-#     labs(title = paste0(titl[[i]]))+
+#     scale_x_continuous(breaks=c(1:Tp)) +
+#    # labs(title = paste0(titl[[i]]))+
 #     theme(plot.title = element_text(hjust = 0,face="bold", colour="Black", size = 18),
 #           axis.title.x = element_text(face="bold", colour="Black", size = 18),
 #           axis.title.y = element_text(face="bold", colour="Black", size =18),
@@ -430,63 +436,63 @@ res_sb <- data.frame(iter=integer(),
 #     scale_fill_manual(values = pal,breaks=levels(factor(melted_varmatexcl_t$value)),na.value="gray")
 # 
 #   plot_list[[i]] = p
-#   print(plot_list[[i]])
+#   #print(plot_list[[i]])
 #   #dev.off()
 # }
-# 
-# png(paste0(add_name,"_B1",".png"), width = 2000, height = 500)
-# grid.arrange(plot_list[[1]],plot_list[[2]],plot_list[[3]],plot_list[[4]],ncol=4)
-# dev.off()
-# 
-# png(paste0(add_name,"_B2",".png"), width = 2000, height = 500)
-# grid.arrange(plot_list[[5]],plot_list[[6]],plot_list[[7]],plot_list[[8]],ncol=4)
-# dev.off()
-# 
-# png(paste0(add_name,"_B3",".png"), width = 2000, height = 500)
-# grid.arrange(plot_list[[9]],plot_list[[10]],plot_list[[11]],plot_list[[12]],ncol=4)
-# dev.off()
-# 
-# png(paste0(add_name,"_B4",".png"), width = 2000, height = 500)
-# grid.arrange(plot_list[[13]],plot_list[[14]],plot_list[[15]],plot_list[[16]],ncol=4)
-# dev.off()
-# 
-# png(paste0(add_name,"_B5",".png"), width = 2000, height = 500)
-# grid.arrange(plot_list[[17]],plot_list[[18]],plot_list[[19]],plot_list[[20]],ncol=4)
-# dev.off()
-# 
-# png(paste0(add_name,"_B6",".png"), width = 2000, height = 500)
-# grid.arrange(plot_list[[21]],plot_list[[22]],plot_list[[23]],plot_list[[24]],ncol=4)
-# dev.off()
-# 
-# png(paste0(add_name,"_B7",".png"), width = 2000, height = 500)
-# grid.arrange(plot_list[[25]],plot_list[[26]],plot_list[[27]],plot_list[[28]],ncol=4)
-# dev.off()
-# 
-# png(paste0(add_name,"_B8",".png"), width = 2000, height = 500)
-# grid.arrange(plot_list[[29]],plot_list[[30]],plot_list[[31]],plot_list[[32]],ncol=4)
-# dev.off()
-# 
-# png(paste0(add_name,"_B9",".png"), width = 2000, height = 500)
-# grid.arrange(plot_list[[33]],plot_list[[34]],plot_list[[35]],plot_list[[36]],ncol=4)
-# dev.off()
-# 
-# png(paste0(add_name,"_B10",".png"), width = 2000, height = 500)
-# grid.arrange(plot_list[[37]],plot_list[[38]],plot_list[[39]],plot_list[[40]],ncol=4)
-# dev.off()
-# 
-# png(paste0(add_name,"_B11",".png"), width = 2000, height = 500)
-# grid.arrange(plot_list[[41]],plot_list[[42]],plot_list[[43]],plot_list[[44]],ncol=4)
-# dev.off()
-# 
-#trial schemtaic
-# color_palette <-colorRampPalette(c( "white", "grey"))(2)
 # # 
+# # png(paste0(add_name,"_B1",".png"), width = 2000, height = 500)
+# # grid.arrange(plot_list[[1]],plot_list[[2]],plot_list[[3]],plot_list[[4]],ncol=4)
+# # dev.off()
+# # 
+# # png(paste0(add_name,"_B2",".png"), width = 2000, height = 500)
+# # grid.arrange(plot_list[[5]],plot_list[[6]],plot_list[[7]],plot_list[[8]],ncol=4)
+# # dev.off()
+# # 
+# # png(paste0(add_name,"_B3",".png"), width = 2000, height = 500)
+# # grid.arrange(plot_list[[9]],plot_list[[10]],plot_list[[11]],plot_list[[12]],ncol=4)
+# # dev.off()
+# # 
+# # png(paste0(add_name,"_B4",".png"), width = 2000, height = 500)
+# # grid.arrange(plot_list[[13]],plot_list[[14]],plot_list[[15]],plot_list[[16]],ncol=4)
+# # dev.off()
+# # 
+# # png(paste0(add_name,"_B5",".png"), width = 2000, height = 500)
+# # grid.arrange(plot_list[[17]],plot_list[[18]],plot_list[[19]],plot_list[[20]],ncol=4)
+# # dev.off()
+# # 
+# # png(paste0(add_name,"_B6",".png"), width = 2000, height = 500)
+# # grid.arrange(plot_list[[21]],plot_list[[22]],plot_list[[23]],plot_list[[24]],ncol=4)
+# # dev.off()
+# # 
+# # png(paste0(add_name,"_B7",".png"), width = 2000, height = 500)
+# # grid.arrange(plot_list[[25]],plot_list[[26]],plot_list[[27]],plot_list[[28]],ncol=4)
+# # dev.off()
+# # 
+# # png(paste0(add_name,"_B8",".png"), width = 2000, height = 500)
+# # grid.arrange(plot_list[[29]],plot_list[[30]],plot_list[[31]],plot_list[[32]],ncol=4)
+# # dev.off()
+# # 
+# # png(paste0(add_name,"_B9",".png"), width = 2000, height = 500)
+# # grid.arrange(plot_list[[33]],plot_list[[34]],plot_list[[35]],plot_list[[36]],ncol=4)
+# # dev.off()
+# # 
+# # png(paste0(add_name,"_B10",".png"), width = 2000, height = 500)
+# # grid.arrange(plot_list[[37]],plot_list[[38]],plot_list[[39]],plot_list[[40]],ncol=4)
+# # dev.off()
+# # 
+# # png(paste0(add_name,"_B11",".png"), width = 2000, height = 500)
+# # grid.arrange(plot_list[[41]],plot_list[[42]],plot_list[[43]],plot_list[[44]],ncol=4)
+# # dev.off()
+# # 
+# #trial schemtaic
+# color_palette <-colorRampPalette(c( "white", "grey"))(2)
+# #
 # # add_name = "G:\\Shared drives\\Ehsan PhD work\\Ehsan\\Presentations\\ViCBiostat_July14\\schematic\\"
 # # png(paste0(add_name,2,".png"), width = 500, height = 500)
 # plot_list[[i+1]]=ggplot(data =subset(melted_varmatexcl_t,iter==1), aes(x=Period, y=Sequence, fill = factor(Xdvalue))) +
 #   geom_tile( colour = "grey50") +
 #   scale_y_reverse(breaks=c(1:K)) +
-#   scale_x_continuous(breaks=c(1:T)) +
+#   scale_x_continuous(breaks=c(1:Tp)) +
 #   theme(plot.title = element_text(hjust = 0,face="bold", colour="Black", size = 18),
 #         axis.title.x = element_text(face="bold", colour="Black", size = 18),
 #         axis.title.y = element_text(face="bold", colour="Black", size =18),
@@ -497,11 +503,11 @@ res_sb <- data.frame(iter=integer(),
 #   theme(panel.grid.minor = element_blank()) +
 #   geom_text(aes(Period, Sequence, label = Xdvalue), color = "black", size = 10) +
 #   scale_fill_manual(values = color_palette) +  theme(legend.position="none")
-
+# 
 # plot_list[[i+2]]=ggplot(data =subset(melted_varmatexcl_t,iter==24), aes(x=Period, y=Sequence, fill = factor(Xdvalue))) +
 #   geom_tile( colour = "grey50") +
 #   scale_y_reverse(breaks=c(1:K)) +
-#   scale_x_continuous(breaks=c(1:T)) +
+#   scale_x_continuous(breaks=c(1:Tp)) +
 #   theme(plot.title = element_text(hjust = 0,face="bold", colour="Black", size = 18),
 #         axis.title.x = element_text(face="bold", colour="Black", size = 18),
 #         axis.title.y = element_text(face="bold", colour="Black", size =18),
