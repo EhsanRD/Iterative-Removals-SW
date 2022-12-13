@@ -99,7 +99,7 @@ server <- function(input, output, session) {
     output$text <- renderText({
         
         paste(
-        "Need more infromation please contact us:",
+        "Need more information please contact us:",
         "Monash University",
         "School of Public Health and Preventive Medicine",
         "553 St Kilda Road", 
@@ -126,7 +126,6 @@ server <- function(input, output, session) {
         rho0 = 0.05,
         r=0.95,
         type=1,
-        cpnum=1,
         effsize=0.2
         #acrate=1
     )
@@ -179,10 +178,10 @@ server <- function(input, output, session) {
     })
     
     header3a <- renderPrint({
-        tags$h3("Relative variance of treatment effect estimator")
+        tags$h3("Efficiency loss compared to complete design")
     })
     header3b <- renderPrint({
-        tags$h4("Incomplete design variance vs complete design variance")
+        tags$h4("")
     })
     output$plotheader4a <- eventReactive(input$update, {
         header4a()
@@ -255,13 +254,12 @@ server <- function(input, output, session) {
         rho0=values$rho0
         r=values$r
         type=values$type
-        cpnum=values$cpnum
         
-        K=values$Tp-1
         
         #Put parameters here
-        melted_varmatexcl<- melt(IterRemoval(Tp,m, rho0, r, type,cpnum)[[1]])
-        melted_desmatexcl<- melt(IterRemoval(Tp,m, rho0, r, type,cpnum)[[2]])
+        IterRes<- IterRemove(Tp,m,rho0,r,type)
+        melted_varmatexcl<- melt(IterRes[[1]])
+        melted_desmatexcl<- melt(IterRes[[2]])
         
         names(melted_desmatexcl)[names(melted_desmatexcl)=="value"] <- "Xdvalue"
         melted_varmatexcl_t<- jointdataset <- merge(melted_varmatexcl, melted_desmatexcl, by = c('Var1','Var2','L1'))
@@ -277,10 +275,10 @@ server <- function(input, output, session) {
         names(melted_varmatexcl_t)[names(melted_varmatexcl_t)=="L1"] <- "iter"
 
         Xdes <- SWdesmat(Tp)
-        varmatall<- IterRemoval(Tp,m, rho0, r, type,cpnum)[[3]]
+        varmatall<- IterRes[[3]]
         
         Tp <- ncol(Xdes)
-        K <- nrow(Xdes)
+        K  <- nrow(Xdes)
 
         #outfile <- tempfile(fileext='.gif')
         ###Need power values for removal plot####
