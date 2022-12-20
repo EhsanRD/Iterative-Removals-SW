@@ -26,10 +26,7 @@ CRTVarGeneralAdj <- function(Xmat, m, rho0, r, type) {
     if(length(dropind>0)){
       Zmat <- Zmat[,-dropind]
     }
-    
-    #Variance matrix for one cluster, with decay in correlation over time
-    #Vi <- diag(sig2,T) + matrix(sig2CP,nrow=T, ncol=T)
-    #Constant decay var if type==0
+    #Constant decay
     if(type==0) { 
       Vi <-diag(sig2 +(1-r)*sig2CP, Tp) + matrix(data=sig2CP*r, nrow=Tp, ncol=Tp)
     }
