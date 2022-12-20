@@ -7,7 +7,7 @@ SWdesmat <- function(Tp) {
   }
   return(Xsw)
 }
-#assume one cluster is randomised to each sequence   
+#assume one cluster is randomised to each sequence. 
 #function to calculate the information contents considering centrosymmetric property. 
 ICPair = function(Xdes,m,rho0,r,type) {
   
