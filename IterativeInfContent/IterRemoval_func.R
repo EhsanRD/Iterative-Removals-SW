@@ -26,7 +26,7 @@ library("rsconnect")
 require("gridExtra")
 
 #setwd("~/Google Drive/Shared drives/Ehsan PhD work/Codes/")
-setwd("G:\\Shared drives\\Ehsan PhD work\\Codes\\Git\\Iterative-Removals-SW\\IterativeInfContent")
+#setwd("G:\\Shared drives\\Ehsan PhD work\\Codes\\Git\\Iterative-Removals-SW\\IterativeInfContent")
 source("CRTVarAdj_func.R", local=TRUE)
 #source("ICcell_appfunc.R", local=TRUE)
 
@@ -60,8 +60,13 @@ ICPair = function(Xdes,m,rho0,r,type){
           Xdesij <- Xdes
           Xdesij[i,j] <- NA
           Xdesij[K-i+1,Tp-j+1] <- NA
-          ICmat[i,j] <- CRTVarGeneralAdj(Xdesij,m,rho0,r,type)/varD
+          ICmat[i,j] <- round(CRTVarGeneralAdj(Xdesij,m,rho0,r,type)/varD,10)
           ICmat[K-i+1,Tp-j+1] <- ICmat[i,j]
+          
+       if (is.na(ICmat[i,j])==TRUE & is.na(ICmat[K-i+1,Tp-j+1]==TRUE)) {
+          ICmat[i,j] <-101.101
+          ICmat[K-i+1,Tp-j+1] <- ICmat[i,j]
+          }
         }
         #avoid replicating loop
         if (i*j==(nrow(Xdes)*ncol(Xdes)/2)){
