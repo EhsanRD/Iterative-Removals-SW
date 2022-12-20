@@ -1,5 +1,5 @@
 source("CRTVarAdj_func.R", local=TRUE)
-#function for generating design matrices
+#generating design matrices
 SWdesmat <- function(Tp) {
   Xsw <- matrix(data=0, ncol = Tp, nrow = (Tp-1))
   for(i in 1:(Tp-1)) {
@@ -7,10 +7,9 @@ SWdesmat <- function(Tp) {
   }
   return(Xsw)
 }
-
 #assume one cluster is randomised to each sequence   
 #function to calculate the information contents utilising centrosymmetric property 
-ICPair = function(Xdes,m,rho0,r,type){
+ICPair = function(Xdes,m,rho0,r,type) {
   
   Tp <- ncol(Xdes)
   K  <- nrow(Xdes)
@@ -43,7 +42,6 @@ ICPair = function(Xdes,m,rho0,r,type){
     }
   return(ICmat)
 }
-
 
 IterRemove = function(Tp,m,rho0,r,type){
   K=Tp-1
