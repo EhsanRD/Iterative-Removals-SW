@@ -2,9 +2,18 @@ source("CRTVarAdj_func.R", local=TRUE)
 source("IterRemoval_func.R", local=TRUE)
 
 library("shiny")
+library("ggplot2")
+library("reshape2")
+library("plyr")
+library("swCRTdesign")
+library("matrixcalc")
+library("scales")
+library("tidyverse")
 library("shinythemes")
+library("Matrix")
 library("plotly")
 library("RColorBrewer")
+library("tidyr")
 
 ui <- fluidPage(
     titlePanel(h1("Information content of progressively reduced stepped wedge designs",h2(""),h3(""))),
