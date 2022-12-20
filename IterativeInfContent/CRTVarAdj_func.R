@@ -6,7 +6,7 @@ SWdesmat <- function(Tp) {
   }
   return(Xsw)
 }
-####################
+#################
 CRTVarGeneralAdj <- function(Xmat, m, rho0, r, type) {
   totalvar <- 1
   sig2CP <- rho0*totalvar
