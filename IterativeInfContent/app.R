@@ -121,11 +121,9 @@ values$effsize <- input$effsize
 output$plotheader1a <- eventReactive(input$update, {
 header1a()
 })
-
 output$plotheader1b <- eventReactive(input$update, {
 header1b()
 })
-
 header1a <- renderPrint({
 tags$h3("The iterative removal of cells with low-information content")
 })
@@ -138,7 +136,6 @@ header2a()
 output$plotheader2b <- eventReactive(input$update, {
 header2b()
 })
-
 header2a <- renderPrint({
 tags$h3("Variance of treatment effect estimator")
 })
@@ -148,11 +145,9 @@ tags$h4("Number of iterations")
 output$plotheader3a <- eventReactive(input$update, {
 header3a()
 })
-
 output$plotheader3b <- eventReactive(input$update, {
 header3b()
 })
-
 header3a <- renderPrint({
 tags$h3("Efficiency loss compared to complete design")
 })
@@ -162,11 +157,9 @@ tags$h4("")
 output$plotheader4a <- eventReactive(input$update, {
 header4a()
 })
-
 output$plotheader4b <- eventReactive(input$update, {
 header4b()
 })
-
 header4a <- renderPrint({
 tags$h3(paste0("Power to detect effect size of ", input$effsize))
 })
