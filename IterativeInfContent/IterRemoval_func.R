@@ -44,6 +44,7 @@ ICPair = function(Xdes,m,rho0,r,type) {
 }
 
 IterRemove = function(Tp,m,rho0,r,type){
+  
   K=Tp-1
   mval <- list()    #minimum lowest information content values
   Xdlist <- list()  #design matrix
