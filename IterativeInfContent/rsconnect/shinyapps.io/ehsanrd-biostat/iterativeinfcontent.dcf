@@ -1,13 +1,13 @@
-name: iterativeinfcontent
-title:
+name: IterativeInfContent
+title: IterativeInfContent
 username:
 account: ehsanrd-biostat
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 6731308
-bundleId: 6160138
+bundleId: 6597566
 url: https://ehsanrd-biostat.shinyapps.io/iterativeinfcontent/
-when: 1659496615.96741
-lastSyncTime: 1659496615.96741
+when: 1670303553.7596
+lastSyncTime: 1670303553.7596
 asMultiple: FALSE
 asStatic: FALSE

@@ -26,7 +26,7 @@ library("rsconnect")
 require("gridExtra")
 
 #setwd("~/Google Drive/Shared drives/Ehsan PhD work/Codes/")
-#setwd("G:\\Shared drives\\Ehsan PhD work\\Codes\\Git\\Iterative-Removals-SW\\IterativeInfContent")
+setwd("G:\\Shared drives\\Ehsan PhD work\\Codes\\Git\\Iterative-Removals-SW\\IterativeInfContent")
 source("CRTVarAdj_func.R", local=TRUE)
 #source("ICcell_appfunc.R", local=TRUE)
 
@@ -104,11 +104,11 @@ IterRemove = function(Tp,m,rho0,r,type){
     
     varvec[i]<-CRTVarGeneralAdj(Xdlist[[i]],m,rho0,r,type)#modify CRTVarGeneralAdj to give Na if variance cannt be calculated
     
-    if (is.na(varvec[i])) {
-    Xdlist[[i]]<- NULL
-    break
-    }
-    
+    # if (is.na(varvec[i])) {
+    # Xdlist[[i]]<- NULL
+    # break
+    # }
+    # 
     dlist[[i]] = ICPair(Xdlist[[i]],m,rho0,r,type)
     #checking if dlist contains all NAs, if yes calculate the variance one more time
    }
