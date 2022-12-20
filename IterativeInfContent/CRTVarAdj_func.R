@@ -35,7 +35,6 @@ CRTVarGeneralAdj <- function(Xmat, m, rho0, r, type) {
       Vi <- diag(sig2,Tp) + sig2CP*(r^abs(matrix(1:Tp,nrow=Tp, ncol=Tp, byrow=FALSE) -
                           matrix(1:Tp,nrow=Tp, ncol=Tp, byrow=TRUE)))
     }
-
   #Variance matrix for all clusters
   Vall <- kronecker(diag(1,K), Vi)
   Vall <- Vall[!is.na(Xvec),!is.na(Xvec)]
