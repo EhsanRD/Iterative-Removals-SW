@@ -132,11 +132,9 @@ tags$h3("The iterative removal of cells with low-information content")
 header1b <- renderPrint({
 tags$h4("Updating the information content of remaining cells, and iterating")
 })
-
 output$plotheader2a <- eventReactive(input$update, {
 header2a()
 })
-
 output$plotheader2b <- eventReactive(input$update, {
 header2b()
 })

@@ -1,5 +1,5 @@
 source("CRTVarAdj_func.R", local=TRUE)
-#generating design matrices
+#generating design matrices.
 SWdesmat <- function(Tp) {
   Xsw <- matrix(data=0, ncol = Tp, nrow = (Tp-1))
   for(i in 1:(Tp-1)) {
