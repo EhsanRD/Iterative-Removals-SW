@@ -5,9 +5,10 @@ account: monash-biostat
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 7824291
-bundleId: 6656635
+bundleId: 7289451
 url: https://monash-biostat.shinyapps.io/IterativeInfContent/
-when: 1671517873.43875
-lastSyncTime: 1671517873.43875
+when: 1685585887.28415
+lastSyncTime: 1685585887.28416
 asMultiple: FALSE
 asStatic: FALSE
+ignoredFiles: .RData|README.md
