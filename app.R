@@ -58,9 +58,9 @@ ui <- fluidPage(
                         plotlyOutput("Varsplot"),
                         textOutput("ICvartext")
                ),
-               tabPanel("Efficiency loss",
+               tabPanel("Precision loss",
                         uiOutput("plotheader3a"), uiOutput("plotheader3b"),
-                        plotlyOutput("Efflossplot"),
+                        plotlyOutput("Prelossplot"),
                         textOutput("ICRvartext")
                ),
                tabPanel("Power",
@@ -149,7 +149,7 @@ output$plotheader3b <- eventReactive(input$update, {
 header3b()
 })
 header3a <- renderPrint({
-tags$h3("Efficiency loss compared to complete design")
+tags$h3("Loss of precision in comparison to a complete design")
 })
 header3b <- renderPrint({
 tags$h4("")
@@ -221,7 +221,7 @@ res$r <- r
 
 
 res <- cbind(res,res$variance[1]/res$variance,(1-(res$variance[1]/res$variance))*100)
-colnames(res) <- c("iter","variance","power","r","Rvariance","Effloss")
+colnames(res) <- c("iter","variance","power","r","Rvariance","Preloss")
 
 
 melted_varmatexcl_t <- merge(res, melted_varmatexcl_t, by = "iter", all = TRUE)
@@ -256,16 +256,16 @@ output$Varsplot<-renderPlotly({
     print(p)
 })
 
-output$Efflossplot<-renderPlotly({
+output$Prelossplot<-renderPlotly({
 
-    p <- plot_ly(res, height=500, width=800, x=~iter, y=~Effloss, name="Effloss", type="scatter",
+    p <- plot_ly(res, height=500, width=800, x=~iter, y=~Preloss, name="Preloss", type="scatter",
                  mode="lines", hoverinfo="text", hoverlabel=list(bordercolor=NULL, font=list(size=16)),
-                 text=~paste("Iteration:", iter, "<br>Effloss:", format(round(Effloss,2),2),"%"),
+                 text=~paste("Iteration:", iter, "<br>Preloss:", format(round(Preloss,2),2),"%"),
                  line=list(color="#F8766D", width=4, dash="dash"))%>%
         layout(xaxis=list(title="Iteration", titlefont=list(size=18), showline=TRUE,
                           tickmode="auto", tickfont=list(size=16), nticks=6, ticks="inside",
                           mirror=TRUE, showgrid=FALSE),
-               yaxis=list(title="Efficiency loss (%)", titlefont=list(size=18), tickfont=list(size=16),
+               yaxis=list(title="Precision  loss (%)", titlefont=list(size=18), tickfont=list(size=16),
                           mirror=TRUE, showline=TRUE),
                legend=list(orientation="h", xanchor="center", yanchor="bottom", x=0.5, y=-0.5, font=list(size=16)),
                margin=list(l=100, r=40))
